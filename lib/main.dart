@@ -1,27 +1,34 @@
 import 'package:flutter/material.dart';
-import 'package:vendas_veiculos/model/cliente.dart';
-import 'package:vendas_veiculos/model/fornecedor.dart';
-import 'package:vendas_veiculos/provider/marcas.dart';
+import 'package:vendas_veiculos/data/database_helper.dart';
+import 'package:vendas_veiculos/data/session.dart';
 import 'package:vendas_veiculos/repository/cliente_repository.dart';
-import 'package:vendas_veiculos/repository/fornecedor_repository.dart';
+import 'package:vendas_veiculos/repository/marca_repository.dart';
+import 'package:vendas_veiculos/repository/modelo_repository.dart';
+import 'package:vendas_veiculos/repository/veiculo_repository.dart';
+import 'package:vendas_veiculos/repository/venda_repository.dart';
 import 'package:vendas_veiculos/repository/vendedor_repository.dart';
 import 'package:vendas_veiculos/routes/app_routes.dart';
-import 'package:vendas_veiculos/view/cliente/add_cliente_page.dart';
-import 'package:vendas_veiculos/view/cliente/cliente_details_page.dart';
-import 'package:vendas_veiculos/view/cliente/cliente_page.dart';
-import 'package:vendas_veiculos/view/fornecedor/add_fornecedor_page.dart';
-import 'package:vendas_veiculos/view/fornecedor/fornecedor_details_page.dart';
-import 'package:vendas_veiculos/view/fornecedor/fornecedor_page.dart';
-import 'package:vendas_veiculos/view/home_page.dart';
+import 'package:vendas_veiculos/view/cliente/cliente_form.dart';
+import 'package:vendas_veiculos/view/cliente/cliente_list.dart';
+import 'package:vendas_veiculos/view/home_page_administrador.dart';
+import 'package:vendas_veiculos/view/home_page_vendedor.dart';
+import 'package:vendas_veiculos/view/login_page.dart';
 import 'package:vendas_veiculos/view/marca/marca_form.dart';
 import 'package:provider/provider.dart';
-import 'package:vendas_veiculos/view/vendedor/add_vendedor_page.dart';
-import 'package:vendas_veiculos/view/vendedor/vendedor_details_page.dart';
-import 'package:vendas_veiculos/view/vendedor/vendedor_page.dart';
+import 'package:vendas_veiculos/view/modelo/modelo_form.dart';
+import 'package:vendas_veiculos/view/modelo/modelo_list.dart';
+import 'package:vendas_veiculos/view/veiculo/veiculo_form.dart';
+import 'package:vendas_veiculos/view/veiculo/veiculo_lista.dart';
+import 'package:vendas_veiculos/view/venda/venda_form.dart';
+import 'package:vendas_veiculos/view/venda/venda_list.dart';
+import 'package:vendas_veiculos/view/vendedor/vendedor_form.dart';
+import 'package:vendas_veiculos/view/vendedor/vendedor_list.dart';
+import 'view/marca/marca_list.dart';
 
-import 'model/vendedor.dart';
-
-void main(List<String> args) {
+Future<void>main(List<String> args) async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await DatabaseHelper.instance.database;
+  await VendedorRepository().seed();
   runApp(const MyApp());
 }
 
@@ -35,7 +42,7 @@ class MyApp extends StatelessWidget {
         //usa multiplos providers
         ChangeNotifierProvider(
           //Marcas implementa o observer
-          create: (ctx) => Marcas(),
+          create: (ctx) => MarcaRepository(),
         ),
         ChangeNotifierProvider(
           create: (ctx) => VendedorRepository(),
@@ -44,7 +51,16 @@ class MyApp extends StatelessWidget {
           create: (ctx) => ClienteRepository(),
         ),
         ChangeNotifierProvider(
-          create: (ctx) => FornecedorRepository(),
+          create: (ctx) => ModeloRepository(),
+        ),
+         ChangeNotifierProvider(
+          create: (ctx) => VeiculoRepository(),
+        ),
+         ChangeNotifierProvider(
+          create: (ctx) => VendaRepository(),
+        ),
+         ChangeNotifierProvider(
+          create: (ctx) => VendedorRepository(),
         ),
       ],
       child: MaterialApp(
@@ -54,41 +70,22 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        onGenerateRoute: (settings) {
-          if (settings.name == AppRoutes.vendedorDetails) {
-            return MaterialPageRoute(
-              builder: (context) {
-                return VendedorDetailsPage(
-                    vendedor: settings.arguments as Vendedor);
-              },
-            );
-          } else if (settings.name == AppRoutes.clienteDetails) {
-            return MaterialPageRoute(
-              builder: (context) {
-                return ClienteDetailsPage(
-                    cliente: settings.arguments as Cliente);
-              },
-            );
-          } else if (settings.name == AppRoutes.fornecedorDetails) {
-            return MaterialPageRoute(
-              builder: (context) {
-                return FornecedorDetailsPage(
-                    fornecedor: settings.arguments as Fornecedor);
-              },
-            );
-          }
-          assert(false, 'Implementation ${settings.name}');
-          return null;
-        },
         routes: {
-          AppRoutes.home: (_) => const HomePage(),
-          AppRoutes.marcaForm: (_) => MarcaForm(),
-          AppRoutes.vendedorList: (_) => const VendedorPage(),
-          AppRoutes.vendedorForm: (_) => const AddVendedorPage(),
-          AppRoutes.clienteList: (_) => const ClientePage(),
-          AppRoutes.clienteForm: (_) => const AddClientePage(),
-          AppRoutes.fornecedorList: (_) => const FornecedorPage(),
-          AppRoutes.fornecedorForm: (_) => const AddFornecedorPage(),
+          AppRoutes.login: (_) => const LoginPage(),
+          AppRoutes.vendedorHome: (_) => const HomePageVendedor(),
+          AppRoutes.administradorHome: (_) => const HomePageAdministrador(),
+          AppRoutes.marcaForm:  (_) => MarcaForm(),
+          AppRoutes.marcaList:  (_) => MarcaList(),
+          AppRoutes.modeloForm: (_) => ModeloForm(),
+          AppRoutes.modeloList: (_) => ModeloList(),
+          AppRoutes.veiculoForm: (_) => VeiculoForm(),
+          AppRoutes.veiculoList: (_) => VeiculoList(),
+          AppRoutes.clienteForm: (_) => ClienteForm(),
+          AppRoutes.clienteList: (_) => ClienteList(),
+          AppRoutes.vendaForm: (_) => VendaForm(),
+          AppRoutes.vendaList: (_) => VendaList(),
+          AppRoutes.vendedorForm: (_) => VendedorForm(),
+          AppRoutes.vendedorList: (_) => VendedorList(),
         },
       ),
     );

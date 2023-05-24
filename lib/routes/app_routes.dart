@@ -1,13 +1,17 @@
 class AppRoutes {
-  static const home = '/';
+  static const login = '/';
+  static const vendedorHome = '/home_vend';
+  static const administradorHome = '/home_adm';
   static const marcaForm = '/marca/create';
-  static const vendedorList = '/vendedor';
-  static const vendedorDetails = '/vendedor/details';
-  static const vendedorForm = '/vendedor/create';
+  static const marcaList = '/marca';
+  static const modeloForm = '/modelo/create';
+  static const modeloList = '/modelo';
+  static const veiculoForm = '/veiculo/create';
+  static const veiculoList = '/veiculo';
+  static const clienteForm = '/cliente/create';
   static const clienteList = '/cliente';
-  static const clienteDetails = 'cliente/details';
-  static const clienteForm = 'cliente/create';
-  static const fornecedorList = '/fornecedor';
-  static const fornecedorDetails = 'fornecedor/details';
-  static const fornecedorForm = 'fornecedor/create';
+  static const vendaForm = '/venda/create';
+  static const vendaList = '/venda';
+  static const vendedorForm = '/vendedor/create';
+  static const vendedorList = '/vendedor';
 }

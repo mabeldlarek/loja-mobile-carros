@@ -1,14 +1,21 @@
-import 'package:flutter/material.dart';
 
 class Marca {
-  final String? id;
-  final String? nome;
-  final String? imageUrl;
+ final int? idMarca;
+ final String? nome;
+ final String? imagem;
 
-  const Marca( {
-    required this.id,
+  const Marca({
+    this.idMarca,
     required this.nome,
-    required this.imageUrl,
+    this.imagem,
   });
+
+  Map<String, dynamic> toMap() {
+    return {'idMarca': idMarca, 'nome': nome, 'imagem': imagem};
+  }
+
+  static Marca fromMap(Map<String, dynamic> map) {
+  return Marca(idMarca: map['idMarca'], nome: map['nome'] ?? '', imagem: map['imagem']?? '');
+  }
   
 }

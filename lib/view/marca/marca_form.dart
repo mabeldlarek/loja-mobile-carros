@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:vendas_veiculos/provider/marcas.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:vendas_veiculos/repository/marca_repository.dart';
 
 import '../../model/marca.dart';
 
@@ -10,26 +13,29 @@ class MarcaForm extends StatefulWidget {
 }
 
 class _MarcaFormState extends State<MarcaForm> {
-  final _form =
-      GlobalKey<FormState>(); 
- // associar com o formulário e acessar ele
+  final _form = GlobalKey<FormState>();
+  // associar com o formulário e acessar ele
   final Map<String, String> _formData = {};
+  int? _id;
+  late File? _imagemFile = null;
 
-  void _loadFormData(Marca marca) {
-    _formData['id'] = marca.id!;
-    _formData['nome'] = marca.nome!;
-    _formData['imageUrl'] = marca.imageUrl!;
+  void _loadFormData(Marca? marca) {
+    if (marca != null) {
+      _id = marca.idMarca;
+      _imagemFile = File(marca.imagem!);
+      _formData['nome'] = marca.nome!;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final Marca marca = ModalRoute.of(context)!.settings.arguments as Marca;
+    final Marca? marca = ModalRoute.of(context)!.settings.arguments as Marca?;
 
     _loadFormData(marca);
 
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Formulario de Usuário'),
+          title: Text('Formulario de Marca'),
           actions: <Widget>[
             IconButton(
                 onPressed: () {
@@ -39,52 +45,96 @@ class _MarcaFormState extends State<MarcaForm> {
                     _form.currentState
                         ?.save(); // chama o método pra cada um dos elementos do form
 
-                    Provider.of<Marcas>(context, listen: false).put(Marca(
-                      id: _formData['id'],
-                      nome: _formData['nome'],
-                      imageUrl: _formData['imageUrl'],
-                    ));
+                    if (_id != null) {
+                      _editar();
+                    } else
+                      _inserir();
 
                     Navigator.of(context).pop();
                   }
                 },
-                icon: const Icon(Icons.save)),
+                icon: Icon(Icons.save)),
           ],
         ),
         body: Padding(
-          padding: const EdgeInsets.all(15),
+          padding: EdgeInsets.all(15),
           child: Form(
               key: _form,
               child: Column(
                 children: <Widget>[
-                  TextFormField(
-                    initialValue: _formData['nome'],
-                    decoration: const InputDecoration(labelText: 'Nome'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Nome inválido";
-                      }
-
-                      if (value.length < 3 || value.length > 50) {
-                        return "Nome deve conter de 3 a 50 caracteres";
-                      }
-
-                      return null;
-                    },
-                    onSaved: (value) => _formData['nome'] = value!,
-                  ),
-                  TextFormField(
-                    initialValue: _formData['imageUrl'],
-                    decoration: const InputDecoration(labelText: 'Logo'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Imagem inválida";
-                      }
-                    },
-                    onSaved: (value) => _formData['imageUrl'] = value!,
-                  ),
+                  Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: TextFormField(
+                        initialValue: _formData['nome'],
+                        decoration: const InputDecoration(
+                            border: OutlineInputBorder(), label: Text('*Nome')),
+                        validator: (value) {
+                          if (value!.isEmpty) return 'Informe um Nome';
+                          if (value.length < 5) return 'Minímo 3 caracteres';
+                          return null;
+                        },
+                        onSaved: (value) => _formData['nome'] = value!,
+                      )),
+                  GestureDetector(
+                     onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            title: Text('Selecione uma imagem'),
+                            content: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () => pickImage(),
+                                  child: Icon(Icons.photo_library),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                         width: 150.0,
+                         height: 150.0,
+                      child:_imagemFile == null
+                          ? Icon(Icons.camera_alt, size: 50.0,)
+                          : Image.file(_imagemFile!, fit: BoxFit.cover),
+                    )),
                 ],
               )),
         ));
+  }
+
+  void _inserir() async {
+    Provider.of<MarcaRepository>(context, listen: false).insertMarca(
+        Marca(nome: _formData['nome'], imagem: _imagemFile == null ? null : _imagemFile!.path));
+  }
+
+  void _editar() async {
+    Provider.of<MarcaRepository>(context, listen: false)
+        .editarMarca(_id!, _formData['nome']!, _imagemFile!.path);
+  }
+
+  Future<void> saveImage(File image) async {
+    final directory = await getExternalStorageDirectory();
+    final imagePath = '${directory?.path}/my_image.png';
+    final newImage = await image.copy(imagePath);
+    // Confirma se o arquivo foi salvo com sucesso
+    final isSaved = await newImage.exists();
+    print(isSaved
+        ? 'Imagem salva com sucesso! $imagePath'
+        : 'Falha ao salvar a imagem.');
+  }
+
+  Future<void> pickImage() async {
+    final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _imagemFile = File(image.path);;
+      });
+      //saveImage(_imagemFile!);
+    } else {
+      print('Nenhuma imagem selecionada.');
+    }
   }
 }

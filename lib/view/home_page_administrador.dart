@@ -1,15 +1,17 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vendas_veiculos/routes/app_routes.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({Key? key}) : super(key: key);
+import '../data/session.dart';
+
+class HomePageAdministrador extends StatelessWidget {
+  const HomePageAdministrador({Key? key}) : super(key: key);
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Bem vindo, Administrador"),
+        title: Text("Bem vindo, ${  Session.nome}"),
       ),
       body: GridView.count(
         padding: const EdgeInsets.all(10),
@@ -77,7 +79,7 @@ class HomePage extends StatelessWidget {
             color: Colors.blue,
             child: InkWell(
               onTap: () {
-                Navigator.pushNamed(context, AppRoutes.vendedorList);
+                Navigator.pushNamed(context, AppRoutes.marcaList);
               },
               child: Padding(
                 padding: const EdgeInsets.all(30),
@@ -106,7 +108,7 @@ class HomePage extends StatelessWidget {
             color: Colors.blue,
             child: InkWell(
               onTap: () {
-                Navigator.pushNamed(context, AppRoutes.vendedorList);
+                Navigator.pushNamed(context, AppRoutes.modeloList);
               },
               child: Padding(
                 padding: const EdgeInsets.all(30),
@@ -135,7 +137,7 @@ class HomePage extends StatelessWidget {
             color: Colors.blue,
             child: InkWell(
               onTap: () {
-                Navigator.pushNamed(context, AppRoutes.vendedorList);
+                Navigator.pushNamed(context, AppRoutes.veiculoList);
               },
               child: Padding(
                 padding: const EdgeInsets.all(30),
@@ -164,14 +166,14 @@ class HomePage extends StatelessWidget {
             color: Colors.blue,
             child: InkWell(
               onTap: () {
-                Navigator.pushNamed(context, AppRoutes.fornecedorList);
+                Navigator.pushNamed(context, AppRoutes.vendaList);
               },
               child: Padding(
                 padding: const EdgeInsets.all(30),
                 child: Column(
                   children: const <Widget>[
                     Text(
-                      "Fornecedores",
+                      "Vendas",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 20,
@@ -189,8 +191,25 @@ class HomePage extends StatelessWidget {
               ),
             ),
           ),
+          
         ],
       ),
+       bottomNavigationBar: BottomNavigationBar(
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Página Inicial',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.search),
+              label: 'Pesquisar',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Perfil',
+            ),
+          ],
+        ),
     );
   }
 }
