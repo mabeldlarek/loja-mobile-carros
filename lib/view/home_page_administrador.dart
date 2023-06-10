@@ -191,6 +191,35 @@ class HomePageAdministrador extends StatelessWidget {
               ),
             ),
           ),
+            Card(
+            color: Colors.blue,
+            child: InkWell(
+              onTap: () {
+                Navigator.pushNamed(context, AppRoutes.promocaoList);
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(30),
+                child: Column(
+                  children: const <Widget>[
+                    Text(
+                      "Promoções",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Padding(padding: EdgeInsets.all(10)),
+                    Icon(
+                      Icons.warehouse,
+                      color: Colors.white,
+                      size: 70,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
           
         ],
       ),

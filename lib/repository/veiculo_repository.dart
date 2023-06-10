@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:vendas_veiculos/repository/promocao_repository.dart';
 
 import '../data/database_helper.dart';
 import '../model/veiculo.dart';
+import '../utils/RealCurrencyInputFormatter.dart';
 
 class VeiculoRepository with ChangeNotifier {
   static Database? db;
@@ -31,7 +33,8 @@ class VeiculoRepository with ChangeNotifier {
   }
 
   Future<void> _onCreate(Database db, int version) async {
-    await db.execute('''
+    await db.execute(
+        '''
       CREATE TABLE $table (
         $columnId INTEGER PRIMARY KEY AUTOINCREMENT,
         $columnIdModelo INTEGER,
@@ -105,16 +108,25 @@ class VeiculoRepository with ChangeNotifier {
     String? dadosString;
     int idModelo = veiculo.idModelo!;
 
-    final List<Map<String, dynamic>> resultado = await db.rawQuery('''
+    final List<Map<String, dynamic>> resultado = await db.rawQuery(
+        '''
     SELECT marca.nome AS nome_marca, modelo.nome AS nome_modelo, modelo.ano
     FROM modelo
     INNER JOIN marca ON modelo.idMarca = marca.idMarca
     WHERE modelo.idModelo = '$idModelo'
   ''');
 
+    final promocao = await PromocaoRepository().byVeiculo(veiculo.idVeiculo!);
+    final valorVeiculo =
+        RealCurrencyInputFormatter().formatCurrency(veiculo.valor);
+    String valor = promocao != null
+        ? 'Valor Promocional de: $valorVeiculo por: ' +
+            RealCurrencyInputFormatter().formatCurrency(promocao.valor!)
+        : valorVeiculo;
+
     for (var row in resultado) {
       dadosString =
-          '${row['nome_marca']} / ${row['nome_modelo']} - ${row['ano']}';
+          '${row['nome_marca']} / ${row['nome_modelo']} - ${row['ano']}\n$valor';
     }
 
     return dadosString;
@@ -130,7 +142,7 @@ class VeiculoRepository with ChangeNotifier {
       columnTipo,
       columnCor,
       columnPlaca
-    ]); //rever os necessários
+    ]);
     notifyListeners();
     print(maps.length);
     return maps.map((map) => Veiculo.fromMap(map)).toList();

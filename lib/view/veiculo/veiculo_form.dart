@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../model/cliente.dart';
 import '../../model/marca.dart';
@@ -7,7 +8,9 @@ import '../../model/veiculo.dart';
 import '../../repository/cliente_repository.dart';
 import '../../repository/marca_repository.dart';
 import '../../repository/modelo_repository.dart';
+import '../../repository/promocao_repository.dart';
 import '../../repository/veiculo_repository.dart';
+import '../../utils/RealCurrencyInputFormatter.dart';
 import '../cliente/cliente_list.dart';
 import '../modelo/modelo_list.dart';
 
@@ -23,8 +26,10 @@ class _VeiculoFormState extends State<VeiculoForm> {
   int? _id;
   final _tipoLista = ["USADO", "NOVO", "SEMINOVO"];
   final _corLista = ["BRANCO", "PRETO", "AZUL", "CINZA"];
-  TextEditingController _controllerModelo = new TextEditingController();
-  TextEditingController _controllerFornecedor = new TextEditingController();
+  final TextEditingController _controllerModelo = new TextEditingController();
+  final TextEditingController _controllerFornecedor = new TextEditingController();
+  final TextEditingController _controller = TextEditingController();
+
 
   var _modeloSelecionadoId = null;
   var _fornecedorSelecionadoId = null;
@@ -36,9 +41,12 @@ class _VeiculoFormState extends State<VeiculoForm> {
       final cliente = await ClienteRepository().byIndex(veiculo.idFornecedor);
       final modelo = await ModeloRepository().byIndex(veiculo.idModelo);
       final marca = await MarcaRepository().byIndex(modelo!.idMarca!);
+      final promocao = await PromocaoRepository().byVeiculo(veiculo.idVeiculo!);
+
       _controllerModelo.text =
           marca!.nome! + '/' + modelo!.nome! + ' - ' + modelo.ano!;
       _controllerFornecedor.text = cliente!.nome!;
+      _controller.text = promocao==null? _formatCurrency(veiculo.valor): _formatCurrency(promocao!.valor);
     }
   }
 
@@ -210,28 +218,28 @@ class _VeiculoFormState extends State<VeiculoForm> {
                         },
                         onSaved: (value) => _formData['placa'] = value!,
                       )),
-                  Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: TextFormField(
-                        initialValue: _formData['valor'],
-                        decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            label: Text('*Valor')),
-                        keyboardType:
-                            TextInputType.numberWithOptions(decimal: true),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Valor deve ser informado.";
-                          }
+                   Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: TextFormField(
+                            controller: _controller,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [RealCurrencyInputFormatter()],
+                            decoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                label: Text('*Valor')),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Valor do veículo deve ser informado.";
+                              }
 
-                          if (value.length < 0.0) {
-                            return "Valor inválido.";
-                          }
+                              if (value.length < 0.0) {
+                                return "Valor do veículo inválido";
+                              }
 
-                          return null;
-                        },
-                        onSaved: (value) => _formData['valor'] = value!,
-                      )),
+                              return null;
+                            },
+                            onSaved: (value) => _formData['valor'] = value!,
+                          ))
                 ],
               )),
             )));
@@ -269,8 +277,17 @@ class _VeiculoFormState extends State<VeiculoForm> {
     });
   }
 
-  double _converterValor(String valor) {
-    return double.parse(valor);
+  double _converterValorMonetario(String valor) {
+    double parsedValue =
+        double.parse(valor.replaceAll(RegExp(r'[^0-9]'), '')) / 100;
+    return parsedValue;
+  }
+
+  String _formatCurrency(double value) {
+    NumberFormat formatadorMoeda =
+        NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+    String valorFormatado = formatadorMoeda.format(value);
+    return valorFormatado;
   }
 
   void _inserir() async {
@@ -278,7 +295,7 @@ class _VeiculoFormState extends State<VeiculoForm> {
         Veiculo(
             idModelo: _modeloSelecionadoId,
             idFornecedor: _fornecedorSelecionadoId,
-            valor: _converterValor(_formData['valor']!),
+            valor: _converterValorMonetario(_formData['valor']!),
             tipo: _formData['tipo'],
             cor: _formData['cor'],
             placa: _formData['placa']));
@@ -289,7 +306,7 @@ class _VeiculoFormState extends State<VeiculoForm> {
       _id,
       _modeloSelecionadoId,
       _fornecedorSelecionadoId,
-      _converterValor(_formData['valor']!),
+      _converterValorMonetario(_formData['valor']!),
       _formData['tipo'],
       _formData['cor'],
       _formData['placa'],

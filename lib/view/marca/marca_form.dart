@@ -57,7 +57,7 @@ class _MarcaFormState extends State<MarcaForm> {
           ],
         ),
         body: Padding(
-          padding: EdgeInsets.all(15),
+          padding: EdgeInsets.all(30),
           child: Form(
               key: _form,
               child: Column(

@@ -10,6 +10,7 @@ class VendaRepository with ChangeNotifier {
   static final columnIdVenda = 'idVenda';
   static final columnIdVeiculo = 'idVeiculo';
   static final columnIdCliente = 'idCliente';
+  static final columnIdVendedor = 'idVendedor';
   static final columnEntrada = 'entrada';
   static final columnParcelas = 'parcelas';
   static final columnData = 'data';
@@ -33,6 +34,7 @@ class VendaRepository with ChangeNotifier {
          $columnIdVenda INTEGER PRIMARY KEY,
             $columnIdVeiculo INTEGER,
             $columnIdCliente INTEGER,
+            $columnIdVendedor INTEGER,
             $columnEntrada REAL,
             $columnParcelas INTEGER,
             $columnData TEXT,
@@ -45,11 +47,12 @@ class VendaRepository with ChangeNotifier {
     final nextId = Sqflite.firstIntValue(
         await db.rawQuery('SELECT MAX($columnIdVenda) + 1 as last_id FROM $table'));
     await db.rawInsert(
-      'INSERT INTO $table($columnIdVenda, $columnIdVeiculo, $columnIdCliente, $columnEntrada, $columnParcelas, $columnData) VALUES (?, ?, ?, ?, ?, ?)',
+      'INSERT INTO $table($columnIdVenda, $columnIdVeiculo, $columnIdCliente, $columnIdVendedor, $columnEntrada, $columnParcelas, $columnData) VALUES (?, ?, ?, ?, ?, ?, ?)',
       [
         nextId,
         venda.idVeiculo,
         venda.idCliente,
+        venda.idVendedor,
         venda.entrada,
         venda.parcelas,
         venda.data,
@@ -80,11 +83,27 @@ class VendaRepository with ChangeNotifier {
           columnIdVenda,
           columnIdCliente,
           columnIdVeiculo,
+          columnIdVendedor,
           columnEntrada,
           columnParcelas,
           columnData,
         ],
         where: '$columnIdVenda = ?',
+        whereArgs: [i]);
+    if (maps.isEmpty) {
+      return null;
+    } else {
+      return Venda.fromMap(maps.first);
+    }
+  }
+
+   Future<Venda?> byVeiculo(int i) async {
+    final db = await database;
+    final maps = await db.query(table,
+        columns: [
+          columnIdVenda,
+        ],
+        where: '$columnIdVeiculo = ?',
         whereArgs: [i]);
     if (maps.isEmpty) {
       return null;
@@ -99,6 +118,7 @@ class VendaRepository with ChangeNotifier {
       columnIdVenda,
       columnIdCliente,
       columnIdVeiculo,
+      columnIdVendedor,
       columnEntrada,
       columnParcelas,
       columnData,
@@ -119,7 +139,7 @@ class VendaRepository with ChangeNotifier {
   }
 
   Future<void> editarVenda(int idVenda, int idVeiculo, int idCliente,
-      String entrada, int parcela) async {
+      double entrada, int parcela) async {
     final db = await database;
 
      final rowsAffected = await db.rawUpdate(

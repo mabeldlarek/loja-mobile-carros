@@ -61,7 +61,7 @@ class _VendedorFormState extends State<VendedorForm> {
         ],
       ),
       body: Padding(
-          padding: const EdgeInsets.all(15),
+          padding: const EdgeInsets.all(30),
           child: Form(
               key: _form,
               child: Column(

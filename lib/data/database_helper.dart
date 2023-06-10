@@ -5,7 +5,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
-  static final String _databaseName = 'my_database.db';
+  static final String _databaseName = 'my_database11.db';
   static final int _databaseVersion = 1;
 
   DatabaseHelper._internal() {
@@ -30,7 +30,8 @@ class DatabaseHelper {
     final path = join(dbPath, _databaseName);
     print('path is $path');
     return await openDatabase(path, version: 5, onCreate: (db, version) async {
-    await db.execute('''
+      await db.execute(
+          '''
       CREATE TABLE modelo(
           idModelo INTEGER PRIMARY KEY,
           nome TEXT,
@@ -44,7 +45,8 @@ class DatabaseHelper {
       )
     ''');
 
-     await db.execute('''
+      await db.execute(
+          '''
         CREATE TABLE marca (
           idMarca INTEGER PRIMARY KEY AUTOINCREMENT,
           nome TEXT NOT NULL,
@@ -52,7 +54,8 @@ class DatabaseHelper {
         )
       ''');
 
-    await db.execute('''
+      await db.execute(
+          '''
         CREATE TABLE veiculo (
           idVeiculo INTEGER PRIMARY KEY AUTOINCREMENT,
           idModelo INTEGER,
@@ -64,7 +67,8 @@ class DatabaseHelper {
       )
    ''');
 
-     await db.execute('''
+      await db.execute(
+          '''
         CREATE TABLE cliente (
           idCliente INTEGER PRIMARY KEY,
           nome TEXT,
@@ -77,7 +81,8 @@ class DatabaseHelper {
       )
    ''');
 
-    await db.execute('''
+      await db.execute(
+          '''
         CREATE TABLE vendedor (
             idVendedor INTEGER PRIMARY KEY,
             nome TEXT,
@@ -88,30 +93,43 @@ class DatabaseHelper {
       )
    ''');
 
-      await db.execute('''
+      await db.execute(
+          '''
         CREATE TABLE venda (
             idVenda INTEGER PRIMARY KEY,
             idVeiculo INTEGER,
             idCliente INTEGER,
+            idVendedor INTEGER,
             entrada REAL,
             parcelas INTEGER,
             data TEXT
       )
    ''');
 
-     /* await db.execute('''
+      await db.execute(
+          '''
         CREATE TABLE promocao (
-        idVeiculo INTEGER PRIMARY KEY AUTOINCREMENT,
-        idModelo INTEGER,
-        idFornecedor INTEGER,
-        valor REAL,
-        tipo TEXT NOT NULL,
-        cor TEXT NOT NULL,
-        placa TEXT NOT NULL
+        idPromocao INTEGER PRIMARY KEY,
+        idVeiculo INTEGER,
+        dataInicial TEXT,
+        dataFinal TEXT,   
+        valor REAL
       )
-   ''');*/
+   ''');
+    });
+  }
 
-  });
+  void limparTabela() async {
+    String path = await getDatabasesPath();
+    String databasePath = join(path, _databaseName);
+
+    Database database = await openDatabase(databasePath);
+
+    String tabela = 'venda';
+
+    await database.rawDelete('DELETE FROM $tabela');
+
+    await database.close();
   }
 
   String get dataBaseName {
@@ -125,7 +143,8 @@ class DatabaseHelper {
   Future<bool> deleteDb() async {
     bool databaseDeleted = false;
 
-    try {Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    try {
+      Directory documentsDirectory = await getApplicationDocumentsDirectory();
       String path = join(documentsDirectory.path, _databaseName);
       await deleteDatabase(path).whenComplete(() {
         databaseDeleted = true;

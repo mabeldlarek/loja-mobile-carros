@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:brasil_fields/brasil_fields.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:vendas_veiculos/repository/cliente_repository.dart';
@@ -22,6 +23,7 @@ class _ClienteFormState extends State<ClienteForm> {
   late DateTime? _selectedDate = null;
   final List<String> tipos = ['COMPRADOR', 'FORNECEDOR'];
   String _selectedTipo = '';
+  bool isCnpjFieldEnabled = false;
 
   void _loadFormData(Cliente? cliente) {
     if (cliente != null) {
@@ -46,7 +48,7 @@ class _ClienteFormState extends State<ClienteForm> {
 
     return Scaffold(
         appBar: AppBar(
-          title: Text('Formulario de Usuário'),
+          title: Text('Formulario de Cliente'),
           actions: <Widget>[
             IconButton(
                 onPressed: () {
@@ -139,18 +141,24 @@ class _ClienteFormState extends State<ClienteForm> {
                           onChanged: (String? newValue) {
                             setState(() {
                               _formData['tipo'] = newValue!;
+                              if (_formData['tipo'] == "FORNECEDOR") {
+                                isCnpjFieldEnabled = true;
+                              } else{
+                                isCnpjFieldEnabled = false;
+                              }
                             });
                           },
                           onSaved: (value) => _formData['tipo'] = value!)),
                   Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: TextFormField(
+                        enabled: isCnpjFieldEnabled == true? true: false,
                         keyboardType: TextInputType.number,
                         initialValue: _formData['cnpj'],
                         decoration: const InputDecoration(
                             border: OutlineInputBorder(), label: Text('CNPJ')),
                         validator: (value) {
-                          if (!UtilBrasilFields.isCNPJValido(value)) {
+                          if (isCnpjFieldEnabled && !UtilBrasilFields.isCNPJValido(value)) {
                             return "CNPJ inválido";
                           }
                         },
@@ -159,13 +167,17 @@ class _ClienteFormState extends State<ClienteForm> {
                   Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: TextFormField(
-                        keyboardType: TextInputType.number,
+                        keyboardType: TextInputType.phone,
+                         inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          TelefoneInputFormatter(),
+                        ],
                         initialValue: _formData['celular'],
                         decoration: const InputDecoration(
                             border: OutlineInputBorder(),
                             label: Text('*Celular')),
                         validator: (value) {
-                          if (value!.length != 9) {
+                          if (value!.length != 15) {
                             return "Celular inválido";
                           }
                         },

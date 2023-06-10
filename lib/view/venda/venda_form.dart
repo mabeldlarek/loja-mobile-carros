@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../data/session.dart';
 import '../../model/cliente.dart';
 import '../../model/veiculo.dart';
 import '../../model/venda.dart';
 import '../../repository/cliente_repository.dart';
 import '../../repository/veiculo_repository.dart';
 import '../../repository/venda_repository.dart';
+import '../../utils/RealCurrencyInputFormatter.dart';
 import '../cliente/cliente_list.dart';
 import '../veiculo/veiculo_lista.dart';
 
@@ -15,7 +17,6 @@ class VendaForm extends StatefulWidget {
   @override
   State<VendaForm> createState() => _VendaFormState();
 }
-
 
 class _VendaFormState extends State<VendaForm> {
   final _form = GlobalKey<FormState>();
@@ -26,7 +27,15 @@ class _VendaFormState extends State<VendaForm> {
   TextEditingController _controllerVeiculo = new TextEditingController();
   TextEditingController _controllerCliente = new TextEditingController();
   TextEditingController _controllerEntrada = new TextEditingController();
+  TextEditingController _controllerValorVeiculo = TextEditingController();
 
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      _obterValorVeiculo();
+    });
+  }
 
   @override
   void dispose() {
@@ -36,7 +45,7 @@ class _VendaFormState extends State<VendaForm> {
 
   String dropdownvalue = '';
   var valorVeiculo = 0.0;
-  String valorEntrada = "";
+  var valorEntrada = 0.0;
   int? _id;
   List<String> parcelas = [
     "1",
@@ -61,6 +70,10 @@ class _VendaFormState extends State<VendaForm> {
       final cliente = await ClienteRepository().byIndex(venda.idCliente);
       _controllerVeiculo.text = veiculoDescricao!;
       _controllerCliente.text = cliente!.nome!;
+      _controllerEntrada.text = valorEntrada == 0.0
+          ? _formatCurrency(venda.entrada)
+          : _formatCurrency(valorEntrada);
+      print("valor é ${_controllerValorVeiculo.text}");
     }
   }
 
@@ -69,12 +82,53 @@ class _VendaFormState extends State<VendaForm> {
       _id = venda.idVenda;
       selectedVeiculoId = venda.idVeiculo;
       selectedClienteId = venda.idCliente;
-      _formData['entrada'] = venda.entrada!;
       _formData['parcela'] = venda.parcelas!.toString();
-      valorEntrada = venda.entrada!;
-      _controllerEntrada.text = valorEntrada;
-      _obterValorVeiculo();
     }
+  }
+
+  Future<String> obterValorVeiculo() async {
+    if(selectedVeiculoId != null) {
+      final veiculo = await VeiculoRepository().byIndex(selectedVeiculoId);
+      valorVeiculo = veiculo!.valor;
+      return _formatCurrency(veiculo!.valor);
+    }
+   return '';
+  }
+
+  Future<String> obterValorEntrada(venda) async {
+     if (venda != null ) {
+      valorEntrada = venda!.entrada;
+      return _formatCurrency(venda!.entrada);
+    }
+    if(_controllerEntrada.text!=null){
+      return _formatCurrency(valorEntrada);
+    }
+   
+    return '';
+  }
+
+  Future<String> obterValorComissao() async {
+    if (selectedVeiculoId != null) {
+      final veiculo = await VeiculoRepository().byIndex(selectedVeiculoId);
+      return _formatCurrency(veiculo!.valor! * 0.15);
+    }
+    return '';
+  }
+
+  Future<String> obterValorParcela(venda) async {
+    if(_formData['parcela'] != null){
+      final veiculo = await VeiculoRepository().byIndex(selectedVeiculoId);
+      return _formatCurrency((veiculo!.valor - valorEntrada) / int.parse(_formData['parcela']!));
+    }
+    return '';
+  }
+
+  Future<String> obterValorTotal(venda) async {
+    if (selectedVeiculoId != null) {
+      final veiculo = await VeiculoRepository().byIndex(selectedVeiculoId);
+      return _formatCurrency(veiculo!.valor! - valorEntrada);
+    }
+    return '';
   }
 
   @override
@@ -107,11 +161,12 @@ class _VendaFormState extends State<VendaForm> {
           ],
         ),
         body: Padding(
-          padding: EdgeInsets.all(15),
+          padding: EdgeInsets.all(30),
           child: Form(
             key: _form,
-            child: Column(
-              children: <Widget>[
+            child: SingleChildScrollView(
+                child: Column(
+                children: <Widget>[
                 Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: TextFormField(
@@ -131,6 +186,7 @@ class _VendaFormState extends State<VendaForm> {
                           _controllerVeiculo.text = selectedVeiculoId != null
                               ? selectedVeiculoId.toString()
                               : '';
+                          _obterValorVeiculo();
                         });
                       },
                       validator: (value) {
@@ -170,25 +226,31 @@ class _VendaFormState extends State<VendaForm> {
                 Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: TextFormField(
-                      initialValue: _formData['entrada'],
-                      enabled: true,
+                      controller: _controllerEntrada,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [RealCurrencyInputFormatter()],
                       decoration: const InputDecoration(
                           border: OutlineInputBorder(),
-                          label: Text('*Entrada')),
-                      keyboardType:
-                          TextInputType.numberWithOptions(decimal: true),
+                          label: Text('*Valor de Entrada')),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return "Entrada deve ser informada.";
+                          return "Valor de entrada deve ser informado.";
                         }
 
                         if (value.length < 0.0) {
-                          return "Entrada inválida.";
+                          return "Valor de entrada inválido";
                         }
 
                         return null;
                       },
-                        
+                      onChanged: (value) {
+                        _controllerEntrada.text = value;
+                        valorEntrada = _converterValorMonetario(value);
+                        _controllerEntrada.selection =
+                            TextSelection.fromPosition(
+                          TextPosition(offset: _controllerEntrada.text.length),
+                        );
+                      },
                       onSaved: (value) => _formData['entrada'] = value!,
                     )),
                 Padding(
@@ -209,9 +271,10 @@ class _VendaFormState extends State<VendaForm> {
                         onChanged: (String? newValue) {
                           setState(() {
                             dropdownvalue = newValue!;
+                            _formData['parcela'] = newValue;
                           });
                         },
-                      validator: (value) {
+                        validator: (value) {
                           if (value == null || value.isEmpty) {
                             return "Informe o campo";
                           }
@@ -221,21 +284,74 @@ class _VendaFormState extends State<VendaForm> {
                 Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
                   ListTile(
                     title: Text('Valor do carro:'),
-                    trailing: Text('R\$' + valorVeiculo.toString()),
+                    trailing: FutureBuilder<String>(
+                      future: obterValorVeiculo(),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<String> snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return CircularProgressIndicator();
+                        }
+                        return Text(snapshot.data ?? '');
+                      },
+                    ),
                   ),
                   ListTile(
                     title: Text('Valor da entrada:'),
-                    trailing: Text('R\$' + valorEntrada),
+                    trailing: FutureBuilder<String>(
+                      future: obterValorEntrada(venda),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<String> snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return CircularProgressIndicator();
+                        }
+                        return Text(snapshot.data ?? '');
+                      },
+                    ),
                   ),
                   ListTile(
                     title: Text('Valor da comissão:'),
-                    trailing: Text(
-                        'R\$' + valorEntrada.toString()), //fazerCalculo 15%
+                    trailing: FutureBuilder<String>(
+                      future: obterValorComissao(),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<String> snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return CircularProgressIndicator();
+                        }
+                        return Text(snapshot.data ?? '');
+                      },
+                    ),
+                  ),
+                  ListTile(
+                    title: Text('Valor Parcela:'),
+                    trailing: FutureBuilder<String>(
+                      future: obterValorParcela(venda),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<String> snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return CircularProgressIndicator();
+                        }
+                        return Text(snapshot.data ?? '');
+                      },
+                    ),
                   ),
                   Divider(),
-                  ListTile(
-                    title: Text('Total:'),
-                    trailing: Text('R\$' + _realizarCalculoTotal().toString()),
+                   ListTile(
+                    title: Text('Valor Total:'),
+                    trailing: FutureBuilder<String>(
+                      future: obterValorTotal(venda),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<String> snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return CircularProgressIndicator();
+                        }
+                        return Text(snapshot.data ?? '');
+                      },
+                    ),
                   ),
                   SizedBox(
                     height: 24,
@@ -247,14 +363,26 @@ class _VendaFormState extends State<VendaForm> {
               ],
             ),
           ),
-        ));
+        )));
+  }
+
+  void _atualizarValorDoController(String valor) {
+    String novoValor = valor; // Valor que você deseja atualizar no controller
+    _controllerEntrada.text = novoValor; // Atualiza o valor do controller
   }
 
   void _obterValorVeiculo() async {
     if (selectedVeiculoId != null) {
       final veiculo = await VeiculoRepository().byIndex(selectedVeiculoId);
       valorVeiculo = veiculo!.valor!;
+      _controllerValorVeiculo.text = _formatCurrency(valorVeiculo);
     }
+  }
+
+  double _converterValorMonetario(String valor) {
+    double parsedValue =
+        double.parse(valor.replaceAll(RegExp(r'[^0-9]'), '')) / 100;
+    return parsedValue;
   }
 
   void _obterCliente() async {
@@ -267,9 +395,20 @@ class _VendaFormState extends State<VendaForm> {
     });
   }
 
+  double _calcularTotalComissao() {
+    return valorVeiculo * 0.15;
+  }
+
   double _realizarCalculoTotal() {
-    double valTotal = 0.0;
+    double valTotal = (valorVeiculo - valorEntrada) - _calcularTotalComissao();
     return valTotal;
+  }
+
+  String _formatCurrency(double value) {
+    NumberFormat formatadorMoeda =
+        NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+    String valorFormatado = formatadorMoeda.format(value);
+    return valorFormatado;
   }
 
   void _inserir() async {
@@ -277,7 +416,8 @@ class _VendaFormState extends State<VendaForm> {
     Provider.of<VendaRepository>(context, listen: false).insertVenda(Venda(
         idVeiculo: selectedVeiculoId,
         idCliente: selectedClienteId,
-        entrada: _formData['entrada']!,
+        idVendedor: Session.id,
+        entrada: _converterValorMonetario(_controllerEntrada.text),
         parcelas: int.parse(_formData['parcela']!),
         data: currentDate.toString()));
   }
@@ -287,15 +427,8 @@ class _VendaFormState extends State<VendaForm> {
         _id!,
         selectedVeiculoId,
         selectedClienteId,
-        _formData['entrada']!,
+        _converterValorMonetario(_controllerEntrada.text),
         int.parse(_formData['parcela']!));
-  }
-
-  String _formatarValorMonetarioString(double valor) {
-    double valor = 1234.56;
-    String valorFormatado =
-        NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$').format(valor);
-    return valorFormatado;
   }
 
   double _converterEntrada(String entrada) {

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:vendas_veiculos/model/venda.dart';
 import 'package:vendas_veiculos/repository/veiculo_repository.dart';
+import 'package:vendas_veiculos/repository/venda_repository.dart';
 
 import '../model/veiculo.dart';
 import '../routes/app_routes.dart';
@@ -13,13 +15,15 @@ class VeiculoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return FutureBuilder<String?>(
         future: _obterDescricao(),
         builder: (BuildContext context, AsyncSnapshot<String?> snapshot) {
+        bool veiculoVendido = VendaRepository().byVeiculo(veiculo.idVeiculo!) == null? true: false;
           String? resultado = snapshot.data;
           return ListTile(
+              enabled: veiculoVendido,
               title: Text(resultado ?? ''),
-              subtitle: null,
               trailing: Container(
                 width: 100,
                 child: Row(

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:vendas_veiculos/data/database_helper.dart';
 import 'package:vendas_veiculos/data/session.dart';
 import 'package:vendas_veiculos/repository/cliente_repository.dart';
 import 'package:vendas_veiculos/repository/marca_repository.dart';
 import 'package:vendas_veiculos/repository/modelo_repository.dart';
+import 'package:vendas_veiculos/repository/promocao_repository.dart';
 import 'package:vendas_veiculos/repository/veiculo_repository.dart';
 import 'package:vendas_veiculos/repository/venda_repository.dart';
 import 'package:vendas_veiculos/repository/vendedor_repository.dart';
@@ -17,6 +19,8 @@ import 'package:vendas_veiculos/view/marca/marca_form.dart';
 import 'package:provider/provider.dart';
 import 'package:vendas_veiculos/view/modelo/modelo_form.dart';
 import 'package:vendas_veiculos/view/modelo/modelo_list.dart';
+import 'package:vendas_veiculos/view/promocao/promocao_form.dart';
+import 'package:vendas_veiculos/view/promocao/promocao_list.dart';
 import 'package:vendas_veiculos/view/veiculo/veiculo_form.dart';
 import 'package:vendas_veiculos/view/veiculo/veiculo_lista.dart';
 import 'package:vendas_veiculos/view/venda/venda_form.dart';
@@ -29,6 +33,7 @@ Future<void>main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   await DatabaseHelper.instance.database;
   await VendedorRepository().seed();
+ 
   runApp(const MyApp());
 }
 
@@ -62,6 +67,9 @@ class MyApp extends StatelessWidget {
          ChangeNotifierProvider(
           create: (ctx) => VendedorRepository(),
         ),
+        ChangeNotifierProvider(
+          create: (ctx) => PromocaoRepository(),
+        ),
       ],
       child: MaterialApp(
         title: 'Car Store App',
@@ -86,6 +94,8 @@ class MyApp extends StatelessWidget {
           AppRoutes.vendaList: (_) => VendaList(),
           AppRoutes.vendedorForm: (_) => VendedorForm(),
           AppRoutes.vendedorList: (_) => VendedorList(),
+          AppRoutes.promocaoForm: (_) => PromocaoForm(),
+          AppRoutes.promocaoList: (_) => PromocaoList(),
         },
       ),
     );

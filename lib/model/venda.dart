@@ -2,7 +2,8 @@ class Venda {
   final int? idVenda;
   final int? idVeiculo;
   final int? idCliente;
-  final String? entrada;
+  final int? idVendedor;
+  final double entrada;
   final int? parcelas;
   final String? data;
 
@@ -10,6 +11,7 @@ class Venda {
     this.idVenda,
     required this.idVeiculo,
     required this.idCliente,
+    required this.idVendedor,
     required this.entrada,
     required this.parcelas,
     required this.data,
@@ -20,6 +22,7 @@ class Venda {
       'idVenda': idVenda,
       'veiculo_id': idVeiculo,
       'cliente_id': idCliente,
+      'vendedor_id': idVendedor,
       'entrada': entrada,
       'parcelas': parcelas,
       'data': data,
@@ -31,7 +34,8 @@ class Venda {
       idVenda: map['idVenda'],
       idVeiculo: map['idVeiculo'],
       idCliente: map['idCliente'],
-      entrada: map['entrada'].toString(),
+      idVendedor: map['idVendedor'],
+      entrada: map['entrada'],
       parcelas: map['parcelas'],
       data: map['data'],
     );

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../model/veiculo.dart';
+import '../repository/promocao_repository.dart';
 import '../repository/veiculo_repository.dart';
+import '../repository/venda_repository.dart';
 
 class VeiculoTileSelecao extends StatelessWidget {
   final Veiculo veiculo;
@@ -11,15 +13,17 @@ class VeiculoTileSelecao extends StatelessWidget {
     return FutureBuilder<String?>(
       future: _obterDescricao(),
       builder: (BuildContext context, AsyncSnapshot<String?> snapshot) {
+      bool veiculoVendido = VendaRepository().byVeiculo(veiculo.idVeiculo!) == null? true: false;
         String? resultado = snapshot.data;
-          return ListTile(
-            title: Text(resultado ?? 'Descrição não disponível'),
-            onTap: () {
-              final veiculoSelecionado = veiculo.idVeiculo;
-              Navigator.pop(context, veiculoSelecionado);
-            },
-          );
-        },
+        return ListTile(
+          enabled: veiculoVendido,
+          title: Text(resultado ?? 'Descrição não disponível'),
+          onTap: () {
+            final veiculoSelecionado = veiculo.idVeiculo;
+            Navigator.pop(context, veiculoSelecionado);
+          },
+        );
+      },
     );
   }
 
