@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:vendas_veiculos/data/database_helper.dart' as dbHelper;
 import 'package:vendas_veiculos/data/database_helper.dart';
 import 'package:vendas_veiculos/data/session.dart';
 import 'package:vendas_veiculos/model/caixa.dart';
@@ -33,7 +32,7 @@ import 'view/marca/marca_list.dart';
 
 Future<void>main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dbHelper.DatabaseHelper.instance.database;
+  await DatabaseHelper.instance.database;
   await VendedorRepository().seed();
  
   runApp(const MyApp());

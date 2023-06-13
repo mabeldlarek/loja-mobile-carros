@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
-class DatabaseHelper {
+class Caixa {
   Future<List<Map<String, dynamic>>> getSales() async {
     final databasePath = await getDatabasesPath();
     final path = join(databasePath, 'my_database11.db');
@@ -39,7 +39,7 @@ class DatabaseHelper {
 }
 
 class CaixaPage extends StatelessWidget {
-  final DatabaseHelper databaseHelper = DatabaseHelper();
+  final Caixa databaseHelper = Caixa();
 
   @override
   Widget build(BuildContext context) {
