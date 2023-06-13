@@ -220,7 +220,35 @@ class HomePageAdministrador extends StatelessWidget {
               ),
             ),
           ),
-          
+          Card(
+            color: Colors.blue,
+            child: InkWell(
+              onTap: () {
+                Navigator.pushNamed(context, AppRoutes.caixa);
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(30),
+                child: Column(
+                  children: const <Widget>[
+                    Text(
+                      "Caixa",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Padding(padding: EdgeInsets.all(10)),
+                    Icon(
+                      Icons.attach_money,
+                      color: Colors.white,
+                      size: 70,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ],
       ),
        bottomNavigationBar: BottomNavigationBar(

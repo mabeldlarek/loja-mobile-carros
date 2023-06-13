@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:vendas_veiculos/data/database_helper.dart' as dbHelper;
 import 'package:vendas_veiculos/data/database_helper.dart';
 import 'package:vendas_veiculos/data/session.dart';
+import 'package:vendas_veiculos/model/caixa.dart';
 import 'package:vendas_veiculos/repository/cliente_repository.dart';
 import 'package:vendas_veiculos/repository/marca_repository.dart';
 import 'package:vendas_veiculos/repository/modelo_repository.dart';
@@ -31,7 +33,7 @@ import 'view/marca/marca_list.dart';
 
 Future<void>main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
-  await DatabaseHelper.instance.database;
+  await dbHelper.DatabaseHelper.instance.database;
   await VendedorRepository().seed();
  
   runApp(const MyApp());
@@ -96,6 +98,7 @@ class MyApp extends StatelessWidget {
           AppRoutes.vendedorList: (_) => VendedorList(),
           AppRoutes.promocaoForm: (_) => PromocaoForm(),
           AppRoutes.promocaoList: (_) => PromocaoList(),
+          AppRoutes.caixa: (_) => CaixaPage(),
         },
       ),
     );

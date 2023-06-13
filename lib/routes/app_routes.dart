@@ -16,4 +16,5 @@ class AppRoutes {
   static const vendedorList = '/vendedor';
   static const promocaoForm = '/vendedor/create';
   static const promocaoList = '/vendedor';
+  static const caixa = '/caixa';
 }
