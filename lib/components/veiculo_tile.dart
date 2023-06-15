@@ -19,7 +19,7 @@ class VeiculoTile extends StatelessWidget {
     return FutureBuilder<String?>(
         future: _obterDescricao(),
         builder: (BuildContext context, AsyncSnapshot<String?> snapshot) {
-        bool veiculoVendido = VendaRepository().byVeiculo(veiculo.idVeiculo!) == null? true: false;
+        bool veiculoVendido = VendaRepository().byVeiculo(veiculo.idVeiculo!) ==  true? false : true;
           String? resultado = snapshot.data;
           return ListTile(
               enabled: veiculoVendido,

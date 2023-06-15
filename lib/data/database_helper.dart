@@ -5,7 +5,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
-  static final String _databaseName = 'my_database11.db';
+  static final String _databaseName = 'my_database12.db';
   static final int _databaseVersion = 1;
 
   DatabaseHelper._internal() {

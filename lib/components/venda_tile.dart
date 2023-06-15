@@ -15,53 +15,60 @@ class VendaTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    return ListTile(
-        title: Text(venda.idVenda.toString()),
-        trailing: Container(
-          width: 100,
-          child: Row(
-            children: <Widget>[
-              IconButton(
-                icon: Icon(Icons.edit),
-                color: Colors.orange,
-                onPressed: () {
-                  Navigator.of(context)
-                      .pushNamed(AppRoutes.vendaForm, arguments: venda);
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.delete),
-                color: Colors.red,
-                onPressed: () {
-                  showDialog(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                            title: Text('Excluir Venda'),
-                            content: Text('Tem certeza?'),
-                            actions: <Widget>[
-                              FloatingActionButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: Text('Não'),
-                              ),
-                              FloatingActionButton(
-                                onPressed: () {
-                                  Provider.of<VendaRepository>(context, listen: false)
-                                      .removerVenda(venda.idVenda!);
-                                  print('apagou');
-                                  Navigator.of(context).pop();
-                                },
-                                child: Text('Sim'),
-                              )
-                            ],
-                          ));
-                },
-              )
-            ],
-          ),
-        ));
+    return FutureBuilder<String?>(
+        future: _obterDescricao(),
+        builder: (BuildContext context, AsyncSnapshot<String?> snapshot) {
+        String? resultado = snapshot.data;
+        return ListTile(
+            title: Text(resultado ?? ""),
+            trailing: Container(
+              width: 100,
+              child: Row(
+                children: <Widget>[
+                  IconButton(
+                    icon: Icon(Icons.edit),
+                    color: Colors.orange,
+                    onPressed: () {
+                      Navigator.of(context)
+                          .pushNamed(AppRoutes.vendaForm, arguments: venda);
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.delete),
+                    color: Colors.red,
+                    onPressed: () {
+                      showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                                title: Text('Excluir Venda'),
+                                content: Text('Tem certeza?'),
+                                actions: <Widget>[
+                                  FloatingActionButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: Text('Não'),
+                                  ),
+                                  FloatingActionButton(
+                                    onPressed: () {
+                                      Provider.of<VendaRepository>(context, listen: false)
+                                          .removerVenda(venda.idVenda!);
+                                      print('apagou');
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: Text('Sim'),
+                                      )
+                                  ],
+                                ));
+                          },
+                        )
+                      ],
+                    ),
+                  ));});
   }
 
+  Future<String?> _obterDescricao() async {
+    return VendaRepository().obterDescricaoVenda(venda);
+  }
 
 }

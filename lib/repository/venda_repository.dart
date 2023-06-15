@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:vendas_veiculos/data/database_helper.dart';
 import 'package:vendas_veiculos/model/venda.dart';
+import 'package:vendas_veiculos/repository/veiculo_repository.dart';
+
+import '../model/veiculo.dart';
 
 class VendaRepository with ChangeNotifier {
   static Database? db;
@@ -44,8 +48,8 @@ class VendaRepository with ChangeNotifier {
 
   void insertVenda(Venda venda) async {
     final db = await database;
-    final nextId = Sqflite.firstIntValue(
-        await db.rawQuery('SELECT MAX($columnIdVenda) + 1 as last_id FROM $table'));
+    final nextId = Sqflite.firstIntValue(await db
+        .rawQuery('SELECT MAX($columnIdVenda) + 1 as last_id FROM $table'));
     await db.rawInsert(
       'INSERT INTO $table($columnIdVenda, $columnIdVeiculo, $columnIdCliente, $columnIdVendedor, $columnEntrada, $columnParcelas, $columnData) VALUES (?, ?, ?, ?, ?, ?, ?)',
       [
@@ -97,7 +101,19 @@ class VendaRepository with ChangeNotifier {
     }
   }
 
-   Future<Venda?> byVeiculo(int i) async {
+  Future<String?> obterDescricaoVenda(Venda venda) async {
+    final db = await database;
+    int idVeiculo = venda.idVeiculo!;
+    Veiculo? veiculo = await VeiculoRepository().byIndex(idVeiculo);
+    String? descricaoVeiculo =
+        await VeiculoRepository().obterDescricaoVeiculo(veiculo!);
+    DateTime dataFormatada = DateFormat('yyyy-MM-dd').parse(venda.data!);
+    String data = DateFormat('dd/MM/yyyy').format(dataFormatada);
+
+    return data + ' - ' + descricaoVeiculo!;
+  }
+
+  Future<bool?> byVeiculo(int i) async {
     final db = await database;
     final maps = await db.query(table,
         columns: [
@@ -106,9 +122,9 @@ class VendaRepository with ChangeNotifier {
         where: '$columnIdVeiculo = ?',
         whereArgs: [i]);
     if (maps.isEmpty) {
-      return null;
+      return false; //não há vendas
     } else {
-      return Venda.fromMap(maps.first);
+      return true;
     }
   }
 
@@ -142,7 +158,7 @@ class VendaRepository with ChangeNotifier {
       double entrada, int parcela) async {
     final db = await database;
 
-     final rowsAffected = await db.rawUpdate(
+    final rowsAffected = await db.rawUpdate(
       'UPDATE $table SET idVeiculo = ?, idCliente = ?, entrada = ?, parcelas = ? WHERE idVenda = ?',
       [idVeiculo, idCliente, entrada, parcela, idVenda],
     );

@@ -33,8 +33,7 @@ class VeiculoRepository with ChangeNotifier {
   }
 
   Future<void> _onCreate(Database db, int version) async {
-    await db.execute(
-        '''
+    await db.execute('''
       CREATE TABLE $table (
         $columnId INTEGER PRIMARY KEY AUTOINCREMENT,
         $columnIdModelo INTEGER,
@@ -108,8 +107,7 @@ class VeiculoRepository with ChangeNotifier {
     String? dadosString;
     int idModelo = veiculo.idModelo!;
 
-    final List<Map<String, dynamic>> resultado = await db.rawQuery(
-        '''
+    final List<Map<String, dynamic>> resultado = await db.rawQuery('''
     SELECT marca.nome AS nome_marca, modelo.nome AS nome_modelo, modelo.ano
     FROM modelo
     INNER JOIN marca ON modelo.idMarca = marca.idMarca
@@ -128,7 +126,6 @@ class VeiculoRepository with ChangeNotifier {
       dadosString =
           '${row['nome_marca']} / ${row['nome_modelo']} - ${row['ano']}\n$valor';
     }
-
     return dadosString;
   }
 

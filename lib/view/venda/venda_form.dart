@@ -183,10 +183,10 @@ class _VendaFormState extends State<VendaForm> {
                                   VeiculoList(ctxPrev: context)),
                         );
                         setState(() {
-                          _controllerVeiculo.text = selectedVeiculoId != null
-                              ? selectedVeiculoId.toString()
-                              : '';
-                          _obterValorVeiculo();
+                          if(selectedVeiculoId != null){
+                            _obterVeiculo();
+                            _obterValorVeiculo();
+                          }
                         });
                       },
                       validator: (value) {
@@ -367,8 +367,8 @@ class _VendaFormState extends State<VendaForm> {
   }
 
   void _atualizarValorDoController(String valor) {
-    String novoValor = valor; // Valor que você deseja atualizar no controller
-    _controllerEntrada.text = novoValor; // Atualiza o valor do controller
+    String novoValor = valor; 
+    _controllerEntrada.text = novoValor;
   }
 
   void _obterValorVeiculo() async {
@@ -392,6 +392,18 @@ class _VendaFormState extends State<VendaForm> {
 
     setState(() {
       _controllerCliente.text = selectedClienteId != null ? cliente!.nome : '';
+    });
+  }
+
+  void _obterVeiculo() async {
+    Veiculo? veiculo =
+        await Provider.of<VeiculoRepository>(context, listen: false)
+            .byIndex(selectedVeiculoId);
+    
+    String? descricao = await Provider.of<VeiculoRepository>(context, listen: false).obterDescricaoVeiculo(veiculo!);
+
+    setState(() {
+      _controllerVeiculo.text = selectedVeiculoId != null ?  descricao! : '';
     });
   }
 

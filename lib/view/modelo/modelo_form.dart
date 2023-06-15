@@ -98,7 +98,7 @@ class _ModeloFormState extends State<ModeloForm> {
                             return "Nome inválido";
                           }
 
-                          if (value.length < 3 || value.length > 10) {
+                          if (value.length < 2 || value.length > 10) {
                             return "Nome deve conter de 3 a 10 caracteres";
                           }
 

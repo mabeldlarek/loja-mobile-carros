@@ -70,7 +70,7 @@ class _MarcaFormState extends State<MarcaForm> {
                             border: OutlineInputBorder(), label: Text('*Nome')),
                         validator: (value) {
                           if (value!.isEmpty) return 'Informe um Nome';
-                          if (value.length < 5) return 'Minímo 3 caracteres';
+                          if (value.length < 3) return 'Minímo 3 caracteres';
                           return null;
                         },
                         onSaved: (value) => _formData['nome'] = value!,

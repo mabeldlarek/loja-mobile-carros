@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../model/promocao.dart';
+import '../../model/veiculo.dart';
 import '../../repository/promocao_repository.dart';
 import '../../repository/veiculo_repository.dart';
 import '../../utils/RealCurrencyInputFormatter.dart';
@@ -101,10 +102,9 @@ class _PromocaoFormState extends State<PromocaoForm> {
                                         VeiculoList(ctxPrev: context)),
                               );
                               setState(() {
-                                _controllerVeiculo.text =
-                                    _selectedIdVeiculo != null
-                                        ? _selectedIdVeiculo.toString()
-                                        : '';
+                                  if(_selectedIdVeiculo != null){
+                                    _obterVeiculo();
+                                  }
                               });
                             },
                             validator: (value) {
@@ -221,6 +221,18 @@ class _PromocaoFormState extends State<PromocaoForm> {
           _selectedDataFinal = picked;
         });
       }
+  }
+
+  void _obterVeiculo() async {
+    Veiculo? veiculo =
+        await Provider.of<VeiculoRepository>(context, listen: false)
+            .byIndex(_selectedIdVeiculo!);
+    
+    String? descricao = await Provider.of<VeiculoRepository>(context, listen: false).obterDescricaoVeiculo(veiculo!);
+
+    setState(() {
+      _controllerVeiculo.text = _selectedIdVeiculo != null ?  descricao! : '';
+    });
   }
 
   String _converterData(DateTime dataSelecionada) {
