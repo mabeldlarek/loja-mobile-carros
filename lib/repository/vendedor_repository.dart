@@ -142,6 +142,26 @@ class VendedorRepository with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<Vendedor?> obterVendedorPorId(int? idVendedor) async {
+    final db = await database;
+    final maps = await db.query(table,
+        columns: [
+          columnIdVendedor,
+          columnNome,
+          columnCPF,
+          columnDataNascimento,
+          columnEmail,
+          columnSenha
+        ],
+        where: '$columnIdVendedor = ?',
+        whereArgs: [idVendedor]);
+    if (maps.isEmpty) {
+      return null;
+    } else {
+      return Vendedor.fromMap(maps.first);
+    }
+  }
+
   Future<void> editarVendedor(int id, String nome, String dataNascimento, String CPF, String email, String senha) async {
     final db = await database;
     print('$id vai ser editado');

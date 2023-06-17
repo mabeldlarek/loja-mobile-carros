@@ -29,7 +29,7 @@ import 'package:vendas_veiculos/view/venda/venda_list.dart';
 import 'package:vendas_veiculos/view/vendedor/vendedor_form.dart';
 import 'package:vendas_veiculos/view/vendedor/vendedor_list.dart';
 import 'view/marca/marca_list.dart';
-
+ 
 Future<void>main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   await DatabaseHelper.instance.database;

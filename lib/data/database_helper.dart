@@ -23,6 +23,13 @@ class DatabaseHelper {
     return _database!;
   }
 
+  Future<String> get databasePath async {
+    Directory appDir = await getApplicationDocumentsDirectory();
+    String databaseDir = '${appDir.path}/databases';
+    await Directory(databaseDir).create(recursive: true);
+    String path = join(databaseDir, _databaseName);
+    return path;
+  }
   /// initialize the database
   Future<Database> _initDB() async {
     print('createing databse');

@@ -1,45 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import 'package:provider/provider.dart';
+import 'package:vendas_veiculos/model/cliente.dart';
+import 'package:vendas_veiculos/model/venda.dart';
+import 'package:vendas_veiculos/model/vendedor.dart';
+import 'package:vendas_veiculos/repository/venda_repository.dart';
+import '../repository/cliente_repository.dart';
+import '../repository/promocao_repository.dart';
+import '../repository/vendedor_repository.dart';
 
-class Caixa {
-  Future<List<Map<String, dynamic>>> getSales() async {
-    final databasePath = await getDatabasesPath();
-    final path = join(databasePath, 'my_database11.db');
-    
-    // Verifica se o banco de dados existe
-    if (!await databaseExists(path)) {
-      // Cria o banco de dados e as tabelas
-      final database = await openDatabase(path, version: 1,
-        onCreate: (Database db, int version) async {
-          // Cria a tabela "venda"
-          await db.execute('''
-            CREATE TABLE venda (
-              idVenda INTEGER PRIMARY KEY,
-              cliente TEXT,
-              vendedor TEXT,
-              valor REAL
-            )
-          ''');
-        }
-      );
-      
-      await database.close();
-      
-      return [];
-    }
-    
-    final database = await openDatabase(path);
-
-    final result = await database.rawQuery('SELECT * FROM venda');
-    await database.close();
-
-    return result;
-  }
+class CaixaPage extends StatefulWidget {
+  @override
+  _CaixaPageState createState() => _CaixaPageState();
 }
 
-class CaixaPage extends StatelessWidget {
-  final Caixa databaseHelper = Caixa();
+class _CaixaPageState extends State<CaixaPage> {
+  int? selectedClienteId;
 
   @override
   Widget build(BuildContext context) {
@@ -47,8 +22,8 @@ class CaixaPage extends StatelessWidget {
       appBar: AppBar(
         title: Text('Módulo Financeiro'),
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: databaseHelper.getSales(),
+      body: FutureBuilder<List<Venda>>(
+        future: _obterVendas(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -61,15 +36,28 @@ class CaixaPage extends StatelessWidget {
               itemCount: snapshot.data!.length,
               itemBuilder: (context, index) {
                 final venda = snapshot.data![index];
-                final cliente = venda['cliente'];
-                final vendedor = venda['vendedor'];
-                final valor = venda['valor'] ?? 0; // Valor padrão de 0 caso não exista
+                final cliente = venda.idCliente;
+                final vendedor = VendedorRepository().obterVendedorPorId(venda.idVendedor);
+                final veiculo = venda.idVeiculo;
+                final valor = _calcularValorTotal(venda);
 
                 return ListTile(
                   leading: Icon(Icons.receipt),
-                  title: Text('Venda ${venda['idVenda']}'),
+                  title: Text('Venda ${venda.idVenda}'),
                   subtitle: Text('Cliente: $cliente | Vendedor: $vendedor'),
-                  trailing: Text('R\$ $valor'),
+                  trailing: FutureBuilder<double>(
+                    future: valor,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      } else if (snapshot.hasError) {
+                        return Text('Erro ao calcular o valor');
+                      } else {
+                        final valorTotal = snapshot.data ?? 0;
+                        return Text('R\$ $valorTotal');
+                      }
+                    },
+                  ),
                   onTap: () {
                     generateReceipt(context, venda);
                   },
@@ -82,23 +70,56 @@ class CaixaPage extends StatelessWidget {
     );
   }
 
-  void generateReceipt(BuildContext context, Map<String, dynamic> venda) {
+  Future<List<Venda>> _obterVendas() async {
+    final vendas = await VendaRepository().getVendas();
+    return vendas;
+  }
+
+  Future<double> _calcularValorTotal(Venda venda) async {
+    double valorTotal = venda.entrada ?? 0;
+
+    // Verifica se o veículo está em promoção
+    final promocao = await PromocaoRepository().byVeiculo(venda.idVeiculo!);
+    if (promocao != null) {
+      valorTotal = promocao.valor;
+    }
+
+    // Realiza o cálculo da venda
+    valorTotal -= venda.entrada ?? 0;
+    valorTotal -= valorTotal * 0.05; // Desconto da comissão do vendedor (5%)
+
+    return valorTotal;
+  }
+
+  void generateReceipt(BuildContext context, Venda venda) async {
+    final vendedor = await VendedorRepository().obterVendedorPorId(venda.idVendedor);
+    final cliente = await _obterCliente();
+    final valor = _calcularValorTotal(venda);
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        final cliente = venda['cliente'];
-        final vendedor = venda['vendedor'];
-        final valor = venda['valor'] ?? 0; // Valor padrão de 0 caso não exista
-
         return AlertDialog(
           title: Text('Recibo da Venda'),
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Vendedor: $vendedor'),
-              Text('Cliente: $cliente'),
-              Text('Valor Total: R\$ $valor'),
+              Text('Vendedor: ${vendedor?.nome ?? ''}'),
+              Text('Cliente: ${cliente?.nome ?? ''}'),
+              FutureBuilder<double>(
+                future: valor,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return Text('Erro ao calcular o valor');
+                  } else {
+                    final valorTotal = snapshot.data ?? 0;
+                    return Text('Valor Total: R\$ $valorTotal');
+                  }
+                },
+              ),
               // Adicione mais informações do recibo conforme necessário
             ],
           ),
@@ -112,6 +133,34 @@ class CaixaPage extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+
+  Future<Cliente?> _obterCliente() async {
+    final cliente = await Provider.of<ClienteRepository>(context, listen: false).byIndex(selectedClienteId ?? 0);
+    return cliente;
+  }
+}
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ClienteRepository()),
+      ],
+      child: MaterialApp(
+        title: 'Vendas de Veículos',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        home: CaixaPage(),
+      ),
     );
   }
 }
