@@ -3,6 +3,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:vendas_veiculos/data/database_helper.dart';
 import 'package:vendas_veiculos/data/session.dart';
 import 'package:vendas_veiculos/model/caixa.dart';
+import 'package:vendas_veiculos/view/caixa/caixa_list.dart';
 import 'package:vendas_veiculos/repository/cliente_repository.dart';
 import 'package:vendas_veiculos/repository/marca_repository.dart';
 import 'package:vendas_veiculos/repository/modelo_repository.dart';
@@ -97,7 +98,7 @@ class MyApp extends StatelessWidget {
           AppRoutes.vendedorList: (_) => VendedorList(),
           AppRoutes.promocaoForm: (_) => PromocaoForm(),
           AppRoutes.promocaoList: (_) => PromocaoList(),
-          AppRoutes.caixa: (_) => CaixaPage(),
+          AppRoutes.caixa: (_) => CaixaList(),
         },
       ),
     );
