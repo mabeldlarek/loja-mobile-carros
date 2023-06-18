@@ -11,7 +11,7 @@ class HomePageAdministrador extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Bem vindo, ${  Session.nome}"),
+        title: Text("Bem vindo, ${Session.nome}"),
       ),
       body: GridView.count(
         padding: const EdgeInsets.all(10),
@@ -23,10 +23,10 @@ class HomePageAdministrador extends StatelessWidget {
               onTap: () {
                 Navigator.pushNamed(context, AppRoutes.vendedorList);
               },
-              child: Padding(
-                padding: const EdgeInsets.all(30),
+              child: const Padding(
+                padding: EdgeInsets.all(30),
                 child: Column(
-                  children: const <Widget>[
+                  children: <Widget>[
                     Text(
                       "Vendedores",
                       textAlign: TextAlign.center,
@@ -52,10 +52,10 @@ class HomePageAdministrador extends StatelessWidget {
               onTap: () {
                 Navigator.pushNamed(context, AppRoutes.clienteList);
               },
-              child: Padding(
-                padding: const EdgeInsets.all(30),
+              child: const Padding(
+                padding: EdgeInsets.all(30),
                 child: Column(
-                  children: const <Widget>[
+                  children: <Widget>[
                     Text(
                       "Clientes",
                       textAlign: TextAlign.center,
@@ -81,10 +81,10 @@ class HomePageAdministrador extends StatelessWidget {
               onTap: () {
                 Navigator.pushNamed(context, AppRoutes.marcaList);
               },
-              child: Padding(
-                padding: const EdgeInsets.all(30),
+              child: const Padding(
+                padding: EdgeInsets.all(30),
                 child: Column(
-                  children: const <Widget>[
+                  children: <Widget>[
                     Text(
                       "Marcas",
                       textAlign: TextAlign.center,
@@ -110,10 +110,10 @@ class HomePageAdministrador extends StatelessWidget {
               onTap: () {
                 Navigator.pushNamed(context, AppRoutes.modeloList);
               },
-              child: Padding(
-                padding: const EdgeInsets.all(30),
+              child: const Padding(
+                padding: EdgeInsets.all(30),
                 child: Column(
-                  children: const <Widget>[
+                  children: <Widget>[
                     Text(
                       "Modelos",
                       textAlign: TextAlign.center,
@@ -139,10 +139,10 @@ class HomePageAdministrador extends StatelessWidget {
               onTap: () {
                 Navigator.pushNamed(context, AppRoutes.veiculoList);
               },
-              child: Padding(
-                padding: const EdgeInsets.all(30),
+              child: const Padding(
+                padding: EdgeInsets.all(30),
                 child: Column(
-                  children: const <Widget>[
+                  children: <Widget>[
                     Text(
                       "Veículos",
                       textAlign: TextAlign.center,
@@ -168,10 +168,10 @@ class HomePageAdministrador extends StatelessWidget {
               onTap: () {
                 Navigator.pushNamed(context, AppRoutes.vendaList);
               },
-              child: Padding(
-                padding: const EdgeInsets.all(30),
+              child: const Padding(
+                padding: EdgeInsets.all(30),
                 child: Column(
-                  children: const <Widget>[
+                  children: <Widget>[
                     Text(
                       "Vendas",
                       textAlign: TextAlign.center,
@@ -197,10 +197,10 @@ class HomePageAdministrador extends StatelessWidget {
               onTap: () {
                 Navigator.pushNamed(context, AppRoutes.promocaoList);
               },
-              child: Padding(
-                padding: const EdgeInsets.all(30),
+              child: const Padding(
+                padding: EdgeInsets.all(30),
                 child: Column(
-                  children: const <Widget>[
+                  children: <Widget>[
                     Text(
                       "Promoções",
                       textAlign: TextAlign.center,
@@ -226,10 +226,10 @@ class HomePageAdministrador extends StatelessWidget {
               onTap: () {
                 Navigator.pushNamed(context, AppRoutes.caixa);
               },
-              child: Padding(
-                padding: const EdgeInsets.all(30),
+              child: const Padding(
+                padding: EdgeInsets.all(30),
                 child: Column(
-                  children: const <Widget>[
+                  children: <Widget>[
                     Text(
                       "Caixa",
                       textAlign: TextAlign.center,

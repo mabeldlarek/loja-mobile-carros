@@ -7,7 +7,7 @@ import '../../repository/cliente_repository.dart';
 import '../../routes/app_routes.dart';
 
 class ClienteList extends StatelessWidget {
-  var contextPrevious = null;
+  BuildContext? contextPrevious;
   bool? _somenteFornecedor = false;
 
   ClienteList({super.key, BuildContext? ctxPrev, bool? somenteFornecedor}) {
@@ -25,13 +25,13 @@ class ClienteList extends StatelessWidget {
 
     return Scaffold(
         appBar: AppBar(
-          title: Text('Lista de Clientes'),
+          title: const Text('Lista de Clientes'),
           actions: <Widget>[
             IconButton(
                 onPressed: () {
                   Navigator.of(context).pushNamed(AppRoutes.clienteForm);
                 },
-                icon: Icon(Icons.add))
+                icon: const Icon(Icons.add))
           ],
         ),
         body: FutureBuilder<List<Cliente>>(
@@ -44,7 +44,7 @@ class ClienteList extends StatelessWidget {
                   ClienteTile(snapshot.data![i]) : ClienteTileSelecao(snapshot.data![i])
                 );
               } else {
-                return CircularProgressIndicator(); // or any other loading indicator
+                return const CircularProgressIndicator(); // or any other loading indicator
               }
             }));
   }

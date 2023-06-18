@@ -34,7 +34,7 @@ class VendedorRepository with ChangeNotifier {
     final cnt = await count;
     if(cnt == 0) {
       final nextId = Sqflite.firstIntValue(
-          await db.rawQuery('SELECT last_insert_rowid() + 1'));
+          await db.rawQuery('SELECT MAX($columnIdVendedor) + 1 FROM $table'));
       await db.rawInsert(
         'INSERT INTO $table($columnIdVendedor, $columnNome, $columnDataNascimento, $columnCPF, $columnEmail, $columnSenha) VALUES (?, ?, ?, ?, ?, ?)',
         [
@@ -155,6 +155,7 @@ class VendedorRepository with ChangeNotifier {
         ],
         where: '$columnIdVendedor = ?',
         whereArgs: [idVendedor]);
+    notifyListeners();
     if (maps.isEmpty) {
       return null;
     } else {
@@ -179,7 +180,7 @@ class VendedorRepository with ChangeNotifier {
 
     final List<Map<String, dynamic>> maps =
     await db.rawQuery(''
-        'SELECT nome, idVendedor '
+        'SELECT nome, $columnIdVendedor '
         'FROM vendedor v '
         'WHERE v.email = ? '
         'AND v.senha = ?;',
@@ -189,7 +190,8 @@ class VendedorRepository with ChangeNotifier {
       return -1;
     } else {
       Session.nome = maps[0]['nome'];
-      Session.id = maps[0]['id'];
+      Session.id = maps[0][columnIdVendedor];
+      print(Session.id);
       return maps[0]['nome'] == 'admin' ? 1 : 2;
     }
   }

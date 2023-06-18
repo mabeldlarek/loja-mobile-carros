@@ -1,14 +1,9 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
-import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:vendas_veiculos/data/database_helper.dart';
-import 'package:vendas_veiculos/model/marca.dart';
 
 import '../model/modelo.dart';
-import 'marca_repository.dart';
 
 class ModeloRepository with ChangeNotifier {
   static Database? db;
@@ -141,6 +136,41 @@ class ModeloRepository with ChangeNotifier {
     ]);
     notifyListeners();
     print(maps.length);
+    return maps.map((map) => Modelo.fromMap(map)).toList();
+  }
+
+  Future<List<Modelo>> getModelosFlitered(Map<String, String?> filtros) async {
+    final db = await database;
+    String whereString = "";
+    List<String> whereValues = [];
+
+    filtros.forEach((key, value) {
+      if (value != null && value.isNotEmpty && value != 'null') {
+        whereString = "$whereString$key = ? AND ";
+        whereValues.add(value);
+      }
+    });
+
+    whereString = whereString.substring(0, whereString.length - 5);
+
+    print("$whereString | $whereValues");
+
+    final maps = await db.query(table, columns: [
+      columnIdModelo,
+      columnIdMarca,
+      columnNome,
+      columnAno,
+      columnCodFipe,
+      columnNumPorta,
+      columnNumAssento,
+      columnQuilometragem,
+      columnPossuiAr
+    ],
+    where: whereString,
+    whereArgs: whereValues
+    );
+    notifyListeners();
+    print(maps);
     return maps.map((map) => Modelo.fromMap(map)).toList();
   }
 

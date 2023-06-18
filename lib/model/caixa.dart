@@ -96,6 +96,8 @@ class _CaixaPageState extends State<CaixaPage> {
     final cliente = await _obterCliente();
     final valor = _calcularValorTotal(venda);
 
+    if (!context.mounted) return;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
