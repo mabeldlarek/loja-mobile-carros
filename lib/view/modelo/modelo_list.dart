@@ -43,12 +43,12 @@ class ModeloList extends StatelessWidget {
                       ).then((filtrosSelecionados) {
                         Navigator.pop(context);
                         Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (BuildContext context) => ModeloList(
-                                filtros: filtrosSelecionados,
-                              )
-                          )
+                            context,
+                            MaterialPageRoute(
+                                builder: (BuildContext context) => ModeloList(
+                                  filtros: filtrosSelecionados,
+                                )
+                            )
                         );
                       });
                     },
@@ -60,10 +60,10 @@ class ModeloList extends StatelessWidget {
               },
             ),
             IconButton(
-                onPressed: () {
-                  Navigator.of(context).pushNamed(AppRoutes.modeloForm);
-                },
-                icon: const Icon(Icons.add),
+              onPressed: () {
+                Navigator.of(context).pushNamed(AppRoutes.modeloForm);
+              },
+              icon: const Icon(Icons.add),
             )
           ],
         ),
@@ -81,7 +81,7 @@ class ModeloList extends StatelessWidget {
                 return const CircularProgressIndicator();
               }
             }
-    ));
+        ));
   }
 
   AlertDialog _getDialog(BuildContext context, List<Marca>? marcas) {
@@ -140,7 +140,7 @@ class ModeloList extends StatelessWidget {
                             );
                           }).toList(),
                           onChanged: (int? newValue) {
-                              _selectedIdMarca = newValue;
+                            _selectedIdMarca = newValue;
                           },
                           onSaved: (value) =>
                           _formData['idMarca'] = value.toString(),
@@ -197,7 +197,7 @@ class ModeloList extends StatelessWidget {
                               );
                             }).toList(),
                             onChanged: (String? newValue) {
-                                _formData['numPortas'] = newValue;
+                              _formData['numPortas'] = newValue;
                             },
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -221,7 +221,7 @@ class ModeloList extends StatelessWidget {
                             );
                           }).toList(),
                           onChanged: (String? newValue) {
-                              _formData['numAssentos'] = newValue;
+                            _formData['numAssentos'] = newValue;
                           },
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -263,7 +263,7 @@ class ModeloList extends StatelessWidget {
                               );
                             }).toList(),
                             onChanged: (String? newValue) {
-                                _formData['possuiAr'] = newValue;
+                              _formData['possuiAr'] = newValue;
                             },
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -274,14 +274,14 @@ class ModeloList extends StatelessWidget {
                             onSaved: (value) => _formData['possuiAr'] = value
                         )),
                     Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: OutlinedButton(
-                          onPressed: () {
-                              _form.currentState?.save();
-                              Navigator.pop(context, _formData);
-                            },
-                          child: const Text("Filtrar"),
-                        ),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: OutlinedButton(
+                        onPressed: () {
+                          _form.currentState?.save();
+                          Navigator.pop(context, _formData);
+                        },
+                        child: const Text("Filtrar"),
+                      ),
                     ),
                   ],
                 )),

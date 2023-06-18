@@ -89,7 +89,7 @@ class VendedorRepository with ChangeNotifier {
   Future<int> getProxId() async {
     final Database db = await database;
     final List<Map<String, dynamic>> maps =
-        await db.rawQuery('SELECT last_insert_rowid() as last_id');
+    await db.rawQuery('SELECT last_insert_rowid() as last_id');
     return maps.isNotEmpty ? maps[0]['last_id'] + 1 : 0 + 1;
   }
 
@@ -168,8 +168,8 @@ class VendedorRepository with ChangeNotifier {
     print('$id vai ser editado');
 
     final rowsAffected = await db.rawUpdate(
-      'UPDATE $table SET $columnNome = ?, $columnDataNascimento = ?, $columnCPF = ?, $columnEmail = ?, $columnSenha = ? WHERE idVendedor = ?',
-    [nome, dataNascimento, CPF, email, senha, id]);
+        'UPDATE $table SET $columnNome = ?, $columnDataNascimento = ?, $columnCPF = ?, $columnEmail = ?, $columnSenha = ? WHERE idVendedor = ?',
+        [nome, dataNascimento, CPF, email, senha, id]);
 
     print('Rows affected: $rowsAffected');
     notifyListeners();
@@ -184,7 +184,7 @@ class VendedorRepository with ChangeNotifier {
         'FROM vendedor v '
         'WHERE v.email = ? '
         'AND v.senha = ?;',
-    [email, senha]);
+        [email, senha]);
 
     if(maps.isEmpty) {
       return -1;

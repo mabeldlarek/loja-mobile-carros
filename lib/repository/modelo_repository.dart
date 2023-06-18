@@ -115,7 +115,7 @@ class ModeloRepository with ChangeNotifier {
       print('Ano: ${row['ano']}');
 
       dadosString =
-          '${row['nome_marca']} / ${row['nome_modelo']} - ${row['ano']}';
+      '${row['nome_marca']} / ${row['nome_modelo']} - ${row['ano']}';
     }
 
     return dadosString;
@@ -166,8 +166,8 @@ class ModeloRepository with ChangeNotifier {
       columnQuilometragem,
       columnPossuiAr
     ],
-    where: whereString,
-    whereArgs: whereValues
+        where: whereString,
+        whereArgs: whereValues
     );
     notifyListeners();
     print(maps);
