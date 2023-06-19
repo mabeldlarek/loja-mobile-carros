@@ -41,18 +41,21 @@ class ModeloTile extends StatelessWidget {
                               title: Text('Excluir Modelo'),
                               content: Text('Tem certeza?'),
                               actions: <Widget>[
-                                FloatingActionButton(
+                                ElevatedButton(
                                   onPressed: () {
                                     Navigator.of(context).pop();
                                   },
                                   child: Text('Não'),
                                 ),
-                                FloatingActionButton(
+                                ElevatedButton(
                                   onPressed: () {
                                     Provider.of<ModeloRepository>(context, listen: false).removerModelo(modelo.idModelo!);
                                     Navigator.of(context).pop();
                                   },
-                                  child: Text('Sim'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                  ),
+                                  child: Text('Sim, excluir'),
                                 )
                               ],
                             ));

@@ -2,23 +2,20 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:vendas_veiculos/repository/marca_repository.dart';
+import 'package:intl/intl.dart';
 
-import '../model/marca.dart';
+import 'package:vendas_veiculos/repository/agenda_repository.dart';
+import '../model/agenda.dart';
 import '../routes/app_routes.dart';
 
-class MarcaTile extends StatelessWidget {
- final Marca marca;
- const MarcaTile(this.marca);
+class AgendaTile extends StatelessWidget {
+ final Agenda agenda;
+ const AgendaTile(this.agenda);
 
   @override
   Widget build(BuildContext context) {
-    final avatar = marca.imagem == null || marca.imagem!.isEmpty
-        ? CircleAvatar(child: Icon(Icons.block_flipped))
-        : CircleAvatar(backgroundImage: FileImage(File(marca.imagem!)));
     return ListTile(
-        leading: avatar,
-        title: Text(marca.nome!),
+        title: Text('${agenda.titulo} (${DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(agenda.dataHora!))})'),
         trailing: Container(
           width: 100,
           child: Row(
@@ -28,7 +25,7 @@ class MarcaTile extends StatelessWidget {
                 color: Colors.orange,
                 onPressed: () {
                   Navigator.of(context)
-                      .pushNamed(AppRoutes.marcaForm, arguments: marca);
+                      .pushNamed(AppRoutes.agendaForm, arguments: agenda);
                 },
               ),
               IconButton(
@@ -38,7 +35,7 @@ class MarcaTile extends StatelessWidget {
                   showDialog(
                       context: context,
                       builder: (ctx) => AlertDialog(
-                            title: Text('Excluir Marca'),
+                            title: Text('Excluir Evento'),
                             content: Text('Tem certeza?'),
                             actions: <Widget>[
                               ElevatedButton(
@@ -49,8 +46,8 @@ class MarcaTile extends StatelessWidget {
                               ),
                               ElevatedButton(
                                 onPressed: () {
-                                  Provider.of<MarcaRepository>(context, listen: false)
-                                      .removerMarca(marca.idMarca!);
+                                  Provider.of<AgendaRepository>(context, listen: false)
+                                      .removerAgenda(agenda.idAgenda!);
                                   print('apagou');
                                   Navigator.of(context).pop();
                                 },

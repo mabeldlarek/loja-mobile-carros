@@ -37,20 +37,23 @@ class ClienteTile extends StatelessWidget {
                             title: Text('Excluir Cliente'),
                             content: Text('Tem certeza?'),
                             actions: <Widget>[
-                              FloatingActionButton(
+                              ElevatedButton(
                                 onPressed: () {
                                   Navigator.of(context).pop();
                                 },
                                 child: Text('Não'),
                               ),
-                              FloatingActionButton(
+                              ElevatedButton(
                                 onPressed: () {
                                   Provider.of<ClienteRepository>(context, listen: false)
                                       .removerCliente(cliente.idCliente!);
                                   print('apagou');
                                   Navigator.of(context).pop();
                                 },
-                                child: Text('Sim'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                ),
+                                child: Text('Sim, excluir'),
                               )
                             ],
                           ));

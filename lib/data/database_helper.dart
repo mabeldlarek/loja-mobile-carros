@@ -5,7 +5,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
-  static final String _databaseName = 'my_database12.db';
+  static final String _databaseName = 'my_database26.db';
   static final int _databaseVersion = 1;
 
   DatabaseHelper._internal() {
@@ -123,6 +123,17 @@ class DatabaseHelper {
         valor REAL
       )
    ''');
+
+      await db.execute(
+          '''
+      CREATE TABLE agenda(
+          idAgenda INTEGER PRIMARY KEY,
+          idVendedor INTEGER,
+          titulo TEXT,
+          descricao TEXT,
+          dataHora TEXT
+      )
+    ''');
     });
   }
 

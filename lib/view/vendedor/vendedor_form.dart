@@ -1,6 +1,7 @@
 import 'package:brasil_fields/brasil_fields.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -17,6 +18,7 @@ class _VendedorFormState extends State<VendedorForm> {
   final Map<String, String> _formData = {};
   late DateTime? _selectedDate = null;
   int? _id;
+  bool _showPassword = false;
 
   void _loadFormData(Vendedor? vendedor) {
     if (vendedor != null) {
@@ -25,7 +27,7 @@ class _VendedorFormState extends State<VendedorForm> {
       _formData['cpf'] = vendedor.cpf!;
       _formData['email'] = vendedor.email!;
       _formData['senha'] =
-      vendedor.senha!; // botar iconezinho de mostrar ou não a senha?
+      vendedor.senha!;
       _selectedDate = DateTime.parse(vendedor.dataNascimento);
     }
   }
@@ -38,139 +40,155 @@ class _VendedorFormState extends State<VendedorForm> {
     _loadFormData(vendedor);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Formulario de Vendedor'),
-        actions: <Widget>[
-          IconButton(
-              onPressed: () {
-                final isValid = _form.currentState!.validate();
+        appBar: AppBar(
+          title: Text('Formulario de Vendedor'),
+          actions: <Widget>[
+            IconButton(
+                onPressed: () {
+                  final isValid = _form.currentState!.validate();
 
-                if (isValid) {
-                  _form.currentState?.save();
+                  if (isValid) {
+                    _form.currentState?.save();
 
-                  if (_id != null) {
-                    _editar();
-                  } else {
-                    _inserir();
+                    if (_id != null) {
+                      _editar();
+                    } else {
+                      _inserir();
+                    }
+
+                    Navigator.of(context).pop();
                   }
-
-                  Navigator.of(context).pop();
-                }
-              },
-              icon: const Icon(Icons.save)),
-        ],
-      ),
-      body: Padding(
-          padding: const EdgeInsets.all(30),
-          child: Form(
+                },
+                icon: const Icon(Icons.save)),
+          ],
+        ),
+        body: Padding(
+            padding: const EdgeInsets.all(30),
+            child: Form(
               key: _form,
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-              Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: TextFormField(
-                initialValue: _formData['nome'],
-                decoration: const InputDecoration(
-                    border: OutlineInputBorder(), label: Text('*Nome')),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Nome inválido";
-                  }
+                    Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: TextFormField(
+                          initialValue: _formData['nome'],
+                          decoration: const InputDecoration(
+                              border: OutlineInputBorder(), label: Text('*Nome')),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Nome inválido";
+                            }
 
-                  if (value.length < 3 || value.length > 50) {
-                    return "Nome deve conter de 3 a 50 caracteres";
-                  }
+                            if (value.length < 3 || value.length > 50) {
+                              return "Nome deve conter de 3 a 50 caracteres";
+                            }
 
-                  return null;
-                },
-                onSaved: (value) => _formData['nome'] = value!,
-              )),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: <Widget>[
-                SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.40,
-                    child: TextFormField(
-                      initialValue: _formData['cpf'],
-                      decoration: const InputDecoration(
-                          border: OutlineInputBorder(), label: Text('*CPF')),
-                      validator: (value) {
-                        if (!UtilBrasilFields.isCPFValido(value)) {
-                          return "CPF inválido";
-                        }
-                        return null;
-                      },
-                      onSaved: (value) => _formData['cpf'] = value!,
-                    )),
-                SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.50,
-                    child:TextFormField(
-                        readOnly: true,
-                        controller: TextEditingController(
-                          text: _selectedDate != null
-                              ? DateFormat('dd/MM/yyyy')
-                              .format(_selectedDate!)
-                              : '',
-                        ),
-                        onTap: () {
-                          _selectDate(context);
-                        },
-                        decoration: const InputDecoration(
-                          labelText: 'Data de Nascimento',
-                          hintText: 'dd/mm/aaaa',
-                          prefixIcon: Icon(Icons.calendar_today),
-                        ),
-                        validator: (value) {
-                          if (_selectedDate == null) {
-                            return 'Selecione uma data de nascimento válida';
-                          }
-                          if(!_validarIdade()){
-                            return 'A idade deve ser maior que 18 anos';
-                          }
-                        })),
-              ],
-            )
-          ),
-      Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.50,
-              child:TextFormField(
-                initialValue: _formData['email'],
-                decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    label: Text('*E-mail')),
-                validator: (value) {
-                  if (value != null) {
-                    if (!EmailValidator.validate(value)) {
-                      return "Email inválido";
-                    }
-                  }
-                  return null;
-                },
-                onSaved: (value) => _formData['email'] = value!,
-              ))),
-      Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: TextFormField(
-            initialValue: _formData['senha'],
-            decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                label: Text('*Senha')),
-            validator: (value) {
-              if (value != null) {
-                if (value.length < 5 || value.length > 10) {
-                  return "Senha inválida";
-                }
-              }
-            },
-            onSaved: (value) => _formData['senha'] = value!,
-          )),
-    ]),
-    )));
+                            return null;
+                          },
+                          onSaved: (value) => _formData['nome'] = value!,
+                        )),
+                    Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Row(
+                          children: <Widget>[
+                            Expanded(
+                                child:SizedBox(
+                                    child: TextFormField(
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.digitsOnly,
+                                        CpfInputFormatter(),
+                                      ],
+                                      initialValue: _formData['cpf'],
+                                      decoration: const InputDecoration(
+                                          border: OutlineInputBorder(), label: Text('*CPF')),
+                                      validator: (value) {
+                                        if (!UtilBrasilFields.isCPFValido(value)) {
+                                          return "CPF inválido";
+                                        }
+                                        return null;
+                                      },
+                                      onSaved: (value) => _formData['cpf'] = value!,
+                                    ))),
+                            const SizedBox(width: 12),
+                            Expanded(
+                                child: SizedBox(
+                                    child:TextFormField(
+                                        readOnly: true,
+                                        controller: TextEditingController(
+                                          text: _selectedDate != null
+                                              ? DateFormat('dd/MM/yyyy')
+                                              .format(_selectedDate!)
+                                              : '',
+                                        ),
+                                        onTap: () {
+                                          _selectDate(context);
+                                        },
+                                        decoration: const InputDecoration(
+                                          labelText: 'Data de Nascimento',
+                                          hintText: 'dd/mm/aaaa',
+                                          suffixIcon: Icon(Icons.calendar_today),
+                                          border: OutlineInputBorder(),
+                                        ),
+                                        validator: (value) {
+                                          if (_selectedDate == null) {
+                                            return 'Selecione uma data de nascimento válida';
+                                          }
+                                          if(!_validarIdade()){
+                                            return 'A idade deve ser maior que 18 anos';
+                                          }
+                                        }))),
+                          ],
+                        )
+                    ),
+                    Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: SizedBox(
+                            child:TextFormField(
+                              initialValue: _formData['email'],
+                              decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  label: Text('*E-mail')),
+                              validator: (value) {
+                                if (value != null) {
+                                  if (!EmailValidator.validate(value)) {
+                                    return "Email inválido";
+                                  }
+                                }
+                                return null;
+                              },
+                              onSaved: (value) => _formData['email'] = value!,
+                            ))),
+                    Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: TextFormField(
+                          obscureText: !_showPassword,
+                          initialValue: _formData['senha'],
+                          decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            labelText: '*Senha',
+                            suffixIcon: IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  _showPassword = !_showPassword;
+                                });
+                              },
+                              icon: Icon(
+                                _showPassword ? Icons.visibility : Icons.visibility_off,
+                              ),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value != null) {
+                              if (value.length < 5 || value.length > 10) {
+                                return "Senha inválida";
+                              }
+                            }
+                          },
+                          onSaved: (value) => _formData['senha'] = value!,
+                        )),
+                  ]),
+            )));
   }
 
   void _inserir() async {

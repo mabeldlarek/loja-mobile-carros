@@ -36,13 +36,16 @@ class _ClienteFormState extends State<ClienteForm> {
       _selectedDate = DateTime.parse(cliente.dataNascimento);
       _formData['tipo'] = cliente.tipo;
       _selectedTipo = cliente.tipo;
+      if(_formData['tipo'] == "FORNECEDOR") {
+        isCnpjFieldEnabled = true;
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final Cliente? cliente =
-        ModalRoute.of(context)!.settings.arguments as Cliente?;
+    ModalRoute.of(context)!.settings.arguments as Cliente?;
 
     _loadFormData(cliente);
 
@@ -113,6 +116,10 @@ class _ClienteFormState extends State<ClienteForm> {
                   Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: TextFormField(
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          CpfInputFormatter(),
+                        ],
                         keyboardType: TextInputType.number,
                         initialValue: _formData['cpf'],
                         decoration: const InputDecoration(
@@ -153,6 +160,10 @@ class _ClienteFormState extends State<ClienteForm> {
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: TextFormField(
                         enabled: isCnpjFieldEnabled == true? true: false,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          CnpjInputFormatter(),
+                        ],
                         keyboardType: TextInputType.number,
                         initialValue: _formData['cnpj'],
                         decoration: const InputDecoration(
@@ -168,7 +179,7 @@ class _ClienteFormState extends State<ClienteForm> {
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: TextFormField(
                         keyboardType: TextInputType.phone,
-                         inputFormatters: [
+                        inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly,
                           TelefoneInputFormatter(),
                         ],
@@ -190,7 +201,7 @@ class _ClienteFormState extends State<ClienteForm> {
                           controller: TextEditingController(
                             text: _selectedDate != null
                                 ? DateFormat('dd/MM/yyyy')
-                                    .format(_selectedDate!)
+                                .format(_selectedDate!)
                                 : '',
                           ),
                           onTap: () {

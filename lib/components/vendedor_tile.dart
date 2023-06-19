@@ -37,20 +37,23 @@ class VendedorTile extends StatelessWidget {
                             title: Text('Excluir Vendedor'),
                             content: Text('Tem certeza?'),
                             actions: <Widget>[
-                              FloatingActionButton(
+                              ElevatedButton(
                                 onPressed: () {
                                   Navigator.of(context).pop();
                                 },
                                 child: Text('Não'),
                               ),
-                              FloatingActionButton(
+                              ElevatedButton(
                                 onPressed: () {
                                   Provider.of<VendedorRepository>(context, listen: false)
                                       .removerVendedor(vendedor.idVendedor!);
                                   print('apagou');
                                   Navigator.of(context).pop();
                                 },
-                                child: Text('Sim'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                ),
+                                child: Text('Sim, excluir'),
                               )
                             ],
                           ));

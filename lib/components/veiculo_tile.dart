@@ -45,16 +45,16 @@ class VeiculoTile extends StatelessWidget {
                               showDialog(
                                   context: context,
                                   builder: (ctx) => AlertDialog(
-                                        title: Text('Excluir Modelo'),
+                                        title: Text('Excluir Veículo'),
                                         content: Text('Tem certeza?'),
                                         actions: <Widget>[
-                                          FloatingActionButton(
+                                          ElevatedButton(
                                             onPressed: () {
                                               Navigator.of(context).pop();
                                             },
                                             child: Text('Não'),
                                           ),
-                                          FloatingActionButton(
+                                          ElevatedButton(
                                             onPressed: () {
                                               Provider.of<VeiculoRepository>(
                                                       context,
@@ -63,7 +63,10 @@ class VeiculoTile extends StatelessWidget {
                                                       .idVeiculo! as int);
                                               Navigator.of(context).pop();
                                             },
-                                            child: Text('Sim'),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.red,
+                                            ),
+                                            child: Text('Sim, excluir'),
                                           )
                                         ],
                                       ));

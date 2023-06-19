@@ -47,6 +47,17 @@ class VendedorRepository with ChangeNotifier {
         ],
       );
 
+      await db.rawInsert(
+        'INSERT INTO $table($columnNome, $columnDataNascimento, $columnCPF, $columnEmail, $columnSenha) VALUES (?, ?, ?, ?, ?)',
+        [
+          "vendedor",
+          "2000-05-11T00:00:00.000",
+          "516.433.090-30",
+          "vendedor@mail.com",
+          "123123",
+        ],
+      );
+
       print("vendedor seeded");
     }
   }
@@ -180,7 +191,7 @@ class VendedorRepository with ChangeNotifier {
 
     final List<Map<String, dynamic>> maps =
     await db.rawQuery(''
-        'SELECT nome, $columnIdVendedor '
+        'SELECT $columnNome, $columnIdVendedor '
         'FROM vendedor v '
         'WHERE v.email = ? '
         'AND v.senha = ?;',
@@ -189,9 +200,9 @@ class VendedorRepository with ChangeNotifier {
     if(maps.isEmpty) {
       return -1;
     } else {
-      Session.nome = maps[0]['nome'];
+      Session.nome = maps[0][columnNome];
       Session.id = maps[0][columnIdVendedor];
-      print(Session.id);
+      notifyListeners();
       return maps[0]['nome'] == 'admin' ? 1 : 2;
     }
   }
