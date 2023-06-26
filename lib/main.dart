@@ -5,6 +5,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:vendas_veiculos/data/database_helper.dart';
 import 'package:vendas_veiculos/data/session.dart';
 import 'package:vendas_veiculos/model/caixa.dart';
+import 'package:vendas_veiculos/repository/caixa_repository.dart';
 import 'package:vendas_veiculos/view/caixa/caixa_list.dart';
 import 'package:vendas_veiculos/repository/agenda_repository.dart';
 import 'package:vendas_veiculos/repository/cliente_repository.dart';
@@ -29,7 +30,7 @@ import 'package:vendas_veiculos/view/modelo/modelo_list.dart';
 import 'package:vendas_veiculos/view/promocao/promocao_form.dart';
 import 'package:vendas_veiculos/view/promocao/promocao_list.dart';
 import 'package:vendas_veiculos/view/veiculo/veiculo_form.dart';
-import 'package:vendas_veiculos/view/veiculo/veiculo_lista.dart';
+import 'package:vendas_veiculos/view/veiculo/veiculo_list.dart';
 import 'package:vendas_veiculos/view/venda/venda_form.dart';
 import 'package:vendas_veiculos/view/venda/venda_list.dart';
 import 'package:vendas_veiculos/view/vendedor/vendedor_form.dart';
@@ -94,6 +95,9 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (ctx) => AgendaRepository(),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) => CaixaRepository(),
         ),
       ],
       child: MaterialApp(

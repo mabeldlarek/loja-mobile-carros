@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart';
@@ -5,19 +7,21 @@ import 'package:sqflite/sqflite.dart';
 import 'package:vendas_veiculos/data/database_helper.dart';
 import 'package:vendas_veiculos/model/venda.dart';
 import 'package:vendas_veiculos/repository/veiculo_repository.dart';
+import 'package:http/http.dart' as http;
 
 import '../model/veiculo.dart';
 
 class VendaRepository with ChangeNotifier {
   static Database? db;
-  static final table = 'venda';
-  static final columnIdVenda = 'idVenda';
-  static final columnIdVeiculo = 'idVeiculo';
-  static final columnIdCliente = 'idCliente';
-  static final columnIdVendedor = 'idVendedor';
-  static final columnEntrada = 'entrada';
-  static final columnParcelas = 'parcelas';
-  static final columnData = 'data';
+  static const table = 'venda';
+  static const columnIdVenda = 'idVenda';
+  static const columnIdVeiculo = 'idVeiculo';
+  static const columnIdCliente = 'idCliente';
+  static const columnIdVendedor = 'idVendedor';
+  static const columnEntrada = 'entrada';
+  static const columnParcelas = 'parcelas';
+  static const columnData = 'data';
+  static const apiUri = 'http://10.0.2.2:8080/api/venda';
 
   Future<Database> get database async {
     if (db != null) return db!;
@@ -47,22 +51,14 @@ class VendaRepository with ChangeNotifier {
   }
 
   void insertVenda(Venda venda) async {
-    final db = await database;
-    final nextId = Sqflite.firstIntValue(await db
-        .rawQuery('SELECT MAX($columnIdVenda) + 1 as last_id FROM $table'));
-    await db.rawInsert(
-      'INSERT INTO $table($columnIdVenda, $columnIdVeiculo, $columnIdCliente, $columnIdVendedor, $columnEntrada, $columnParcelas, $columnData) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [
-        nextId,
-        venda.idVeiculo,
-        venda.idCliente,
-        venda.idVendedor,
-        venda.entrada,
-        venda.parcelas,
-        venda.data,
-      ],
+    print("request");
+    await http.put(Uri.parse(apiUri),
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        body: json.encode(venda.toMap())
     );
-
     notifyListeners();
     print(venda.toMap());
   }
@@ -81,28 +77,17 @@ class VendaRepository with ChangeNotifier {
   }
 
   Future<Venda?> byIndex(int i) async {
-    final db = await database;
-    final maps = await db.query(table,
-        columns: [
-          columnIdVenda,
-          columnIdCliente,
-          columnIdVeiculo,
-          columnIdVendedor,
-          columnEntrada,
-          columnParcelas,
-          columnData,
-        ],
-        where: '$columnIdVenda = ?',
-        whereArgs: [i]);
-    if (maps.isEmpty) {
+    final List parsed = json.decode(
+        await http.read(Uri.parse("$apiUri?id=$i"))
+    );
+    if (parsed.isEmpty) {
       return null;
     } else {
-      return Venda.fromMap(maps.first);
+      return Venda.fromMap(parsed.first);
     }
   }
 
   Future<String?> obterDescricaoVenda(Venda venda) async {
-    final db = await database;
     int idVeiculo = venda.idVeiculo!;
     Veiculo? veiculo = await VeiculoRepository().byIndex(idVeiculo);
     String? descricaoVeiculo =
@@ -114,13 +99,9 @@ class VendaRepository with ChangeNotifier {
   }
 
   Future<bool?> byVeiculo(int i) async {
-    final db = await database;
-    final maps = await db.query(table,
-        columns: [
-          columnIdVenda,
-        ],
-        where: '$columnIdVeiculo = ?',
-        whereArgs: [i]);
+    final maps = json.decode(
+        await http.read(Uri.parse("$apiUri?idVeiculo=$i"))
+    );
     if (maps.isEmpty) {
       return false; //não há vendas
     } else {
@@ -129,41 +110,32 @@ class VendaRepository with ChangeNotifier {
   }
 
   Future<List<Venda>> getVendas() async {
-    final db = await database;
-    final maps = await db.query(table, columns: [
-      columnIdVenda,
-      columnIdCliente,
-      columnIdVeiculo,
-      columnIdVendedor,
-      columnEntrada,
-      columnParcelas,
-      columnData,
-    ]);
-    notifyListeners();
-    print(maps.length);
-    return maps.map((map) => Venda.fromMap(map)).toList();
+    final List parsed = json.decode(await http.read(Uri.parse(apiUri)));
+    return parsed.map((map) => Venda.fromMap(map)).toList();
   }
 
   Future<void> removerVenda(int idVenda) async {
-    final db = await database;
-    final rowsDeleted = await db.rawDelete(
-      'DELETE FROM $table WHERE $columnIdVenda = ?',
-      [idVenda],
-    );
-
+    await http.delete(Uri.parse("$apiUri?id=$idVenda"));
     notifyListeners();
   }
 
-  Future<void> editarVenda(int idVenda, int idVeiculo, int idCliente,
-      double entrada, int parcela) async {
-    final db = await database;
-
-    final rowsAffected = await db.rawUpdate(
-      'UPDATE $table SET idVeiculo = ?, idCliente = ?, entrada = ?, parcelas = ? WHERE idVenda = ?',
-      [idVeiculo, idCliente, entrada, parcela, idVenda],
+  Future<void> editarVenda(int idVenda, int idVeiculo, int idVendedor, int idCliente,
+      double entrada, int parcela, String data) async {
+    await http.put(Uri.parse(apiUri),
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        body: json.encode(Venda(
+            idVenda: idVenda,
+            idVeiculo: idVeiculo,
+            idCliente: idCliente,
+            idVendedor: idVendedor,
+            entrada: entrada,
+            parcelas: parcela,
+            data: data,
+        ).toMap())
     );
-
-    print('Rows affected: $rowsAffected');
     notifyListeners();
   }
 }

@@ -11,7 +11,7 @@ import '../../repository/veiculo_repository.dart';
 import '../../repository/venda_repository.dart';
 import '../../utils/RealCurrencyInputFormatter.dart';
 import '../cliente/cliente_list.dart';
-import '../veiculo/veiculo_lista.dart';
+import '../veiculo/veiculo_list.dart';
 
 class VendaForm extends StatefulWidget {
   @override
@@ -47,6 +47,7 @@ class _VendaFormState extends State<VendaForm> {
   var valorVeiculo = 0.0;
   var valorEntrada = 0.0;
   int? _id;
+  String? _data;
   List<String> parcelas = [
     "1",
     "2",
@@ -80,6 +81,7 @@ class _VendaFormState extends State<VendaForm> {
   void _loadFormData(Venda? venda) {
     if (venda != null) {
       _id = venda.idVenda;
+      _data = venda.data;
       selectedVeiculoId = venda.idVeiculo;
       selectedClienteId = venda.idCliente;
       _formData['parcela'] = venda.parcelas!.toString();
@@ -110,7 +112,7 @@ class _VendaFormState extends State<VendaForm> {
   Future<String> obterValorComissao() async {
     if (selectedVeiculoId != null) {
       final veiculo = await VeiculoRepository().byIndex(selectedVeiculoId);
-      return _formatCurrency(veiculo!.valor! * 0.15);
+      return _formatCurrency(veiculo!.valor! * 0.05);
     }
     return '';
   }
@@ -438,9 +440,11 @@ class _VendaFormState extends State<VendaForm> {
     Provider.of<VendaRepository>(context, listen: false).editarVenda(
         _id!,
         selectedVeiculoId,
+        Session.id!,
         selectedClienteId,
         _converterValorMonetario(_controllerEntrada.text),
-        int.parse(_formData['parcela']!));
+        int.parse(_formData['parcela']!),
+        _data!);
   }
 
   double _converterEntrada(String entrada) {

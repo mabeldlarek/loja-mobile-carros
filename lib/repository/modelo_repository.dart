@@ -1,22 +1,26 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:vendas_veiculos/data/database_helper.dart';
+import 'package:http/http.dart' as http;
 
 import '../model/modelo.dart';
 
 class ModeloRepository with ChangeNotifier {
   static Database? db;
-  static final table = 'modelo';
-  static final columnIdModelo = 'idModelo';
-  static final columnNome = 'nome';
-  static final columnIdMarca = 'idMarca';
-  static final columnAno = 'ano';
-  static final columnCodFipe = 'codigoFipe';
-  static final columnNumPorta = 'numPortas';
-  static final columnNumAssento = 'numAssentos';
-  static final columnQuilometragem = 'quilometragem';
-  static final columnPossuiAr = 'possuiAr';
+  static const table = 'modelo';
+  static const columnIdModelo = 'idModelo';
+  static const columnNome = 'nome';
+  static const columnIdMarca = 'idMarca';
+  static const columnAno = 'ano';
+  static const columnCodFipe = 'codigoFipe';
+  static const columnNumPorta = 'numPortas';
+  static const columnNumAssento = 'numAssentos';
+  static const columnQuilometragem = 'quilometragem';
+  static const columnPossuiAr = 'possuiAr';
+  static const apiUri = 'http://10.0.2.2:8080/api/modelo';
   late String descricao;
 
   Future<Database> get database async {
@@ -49,22 +53,12 @@ class ModeloRepository with ChangeNotifier {
   }
 
   void insertModelo(Modelo modelo) async {
-    final db = await database;
-    final nextId = Sqflite.firstIntValue(
-        await db.rawQuery('SELECT MAX($columnIdModelo) + 1 as last_id FROM $table'));
-    await db.rawInsert(
-      'INSERT INTO $table(idModelo, nome, idMarca, ano, codigoFipe, numPortas, numAssentos, quilometragem, possuiAr) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [
-        nextId,
-        modelo.nome,
-        modelo.idMarca,
-        modelo.ano,
-        modelo.codigoFipe,
-        modelo.numPortas,
-        modelo.numAssentos,
-        modelo.quilometragem,
-        modelo.possuiAr
-      ],
+    await http.put(Uri.parse(apiUri),
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        body: json.encode(modelo.toMap())
     );
     notifyListeners();
     print(modelo.toMap());
@@ -77,37 +71,22 @@ class ModeloRepository with ChangeNotifier {
   }
 
   Future<Modelo?> byIndex(int id) async {
-    final db = await database;
-    final maps = await db.query(table,
-        columns: [
-          columnNome,
-          columnIdMarca,
-          columnAno,
-          columnCodFipe,
-          columnNumPorta,
-          columnNumAssento,
-          columnQuilometragem,
-          columnPossuiAr
-        ],
-        where: '$columnIdModelo = ?',
-        whereArgs: [id]);
-    if (maps.isEmpty) {
+    final List parsed = json.decode(
+        await http.read(Uri.parse("$apiUri?id=$id"))
+    );
+    if (parsed.isEmpty) {
       return null;
     } else {
-      return Modelo.fromMap(maps.first);
+      return Modelo.fromMap(parsed.first);
     }
   }
 
   Future<String?> getDescricaoModelo(int idMarca) async {
-    final db = await database;
     String? dadosString;
 
-    final List<Map<String, dynamic>> resultado = await db.rawQuery('''
-    SELECT marca.nome AS nome_marca, modelo.nome AS nome_modelo, modelo.ano
-    FROM modelo
-    INNER JOIN marca ON modelo.idMarca = marca.idMarca
-    WHERE marca.idMarca = '$idMarca'
-  ''');
+    final List<Map<String, dynamic>> resultado = json.decode(
+        await http.read(Uri.parse("$apiUri/descricao?id=$idMarca"))
+    );
 
     for (var row in resultado) {
       print('Marca: ${row['nome_marca']}');
@@ -122,21 +101,9 @@ class ModeloRepository with ChangeNotifier {
   }
 
   Future<List<Modelo>> getModelos() async {
-    final db = await database;
-    final maps = await db.query(table, columns: [
-      columnIdModelo,
-      columnIdMarca,
-      columnNome,
-      columnAno,
-      columnCodFipe,
-      columnNumPorta,
-      columnNumAssento,
-      columnQuilometragem,
-      columnPossuiAr
-    ]);
+    final List parsed = json.decode(await http.read(Uri.parse(apiUri)));
     notifyListeners();
-    print(maps.length);
-    return maps.map((map) => Modelo.fromMap(map)).toList();
+    return parsed.map((map) => Modelo.fromMap(map)).toList();
   }
 
   Future<List<Modelo>> getModelosFlitered(Map<String, String?> filtros) async {
@@ -175,35 +142,29 @@ class ModeloRepository with ChangeNotifier {
   }
 
   Future<void> removerModelo(int idModelo) async {
-    final db = await database;
-    final rowsDeleted = await db.rawDelete(
-      'DELETE FROM $table WHERE $columnIdModelo = ?',
-      [idModelo],
-    );
-
+    await http.delete(Uri.parse("$apiUri?id=$idModelo"));
     notifyListeners();
   }
 
   Future<void> editarModelo(nome, idMarca, idModelo, ano, codigoFipe, numPortas,
       numAssentos, quilometragem, possuiAr) async {
-    final db = await database;
-
-    final rowsAffected = await db.rawUpdate(
-      'UPDATE $table SET nome = ?, idMarca = ?, ano = ?, codigoFipe = ?, numPortas = ?, numAssentos = ?, quilometragem = ?, possuiAr = ? WHERE idModelo = ?',
-      [
-        nome,
-        idMarca,
-        ano,
-        codigoFipe,
-        numPortas,
-        numAssentos,
-        quilometragem,
-        possuiAr,
-        idModelo
-      ],
+    await http.put(Uri.parse(apiUri),
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        body: json.encode(Modelo(
+            nome: nome,
+            idMarca: idMarca,
+            idModelo: idModelo,
+            ano: ano,
+            codigoFipe: codigoFipe,
+            numeroPortas: numPortas,
+            numeroAssentos: numAssentos,
+            quilometragem: quilometragem,
+            possuiAr: possuiAr).toMap()
+        )
     );
-
-    print('Rows affected: $rowsAffected');
     notifyListeners();
   }
 

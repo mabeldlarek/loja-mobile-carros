@@ -1,20 +1,24 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:vendas_veiculos/data/database_helper.dart';
 import 'package:vendas_veiculos/model/vendedor.dart';
+import 'package:http/http.dart' as http;
 
 import '../data/session.dart';
 
 class VendedorRepository with ChangeNotifier {
   static Database? db;
-  static final table = 'vendedor';
-  static final columnIdVendedor = 'idVendedor';
-  static final columnNome = 'nome';
-  static final columnCPF = 'cpf';
-  static final columnDataNascimento = 'dataNascimento';
-  static final columnEmail = 'email';
-  static final columnSenha = 'senha';
+  static const table = 'vendedor';
+  static const columnIdVendedor = 'idVendedor';
+  static const columnNome = 'nome';
+  static const columnCPF = 'cpf';
+  static const columnDataNascimento = 'dataNascimento';
+  static const columnEmail = 'email';
+  static const columnSenha = 'senha';
+  static const apiUri = 'http://10.0.2.2:8080/api/vendedor';
 
   Future<Database> get database async {
     if (db != null) return db!;
@@ -30,32 +34,35 @@ class VendedorRepository with ChangeNotifier {
   }
 
   Future<void> seed() async {
-    final db = await database;
-    final cnt = await count;
-    if(cnt == 0) {
-      final nextId = Sqflite.firstIntValue(
-          await db.rawQuery('SELECT MAX($columnIdVendedor) + 1 FROM $table'));
-      await db.rawInsert(
-        'INSERT INTO $table($columnIdVendedor, $columnNome, $columnDataNascimento, $columnCPF, $columnEmail, $columnSenha) VALUES (?, ?, ?, ?, ?, ?)',
-        [
-          nextId,
-          "admin",
-          "2000-05-11T00:00:00.000",
-          "132.279.959-80",
-          "admin@mail.com",
-          "123123",
-        ],
+    final List cnt = json.decode(await http.read(Uri.parse(apiUri)));
+    if(cnt.isEmpty) {
+
+      await http.put(Uri.parse(apiUri),
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+          },
+          body: json.encode(Vendedor(
+              nome: 'admin',
+              cpf: '132.279.959-80',
+              dataNascimento: '2000-05-11T00:00:00.000',
+              email: 'admin@mail.com',
+              senha: '123123').toMap()
+          )
       );
 
-      await db.rawInsert(
-        'INSERT INTO $table($columnNome, $columnDataNascimento, $columnCPF, $columnEmail, $columnSenha) VALUES (?, ?, ?, ?, ?)',
-        [
-          "vendedor",
-          "2000-05-11T00:00:00.000",
-          "516.433.090-30",
-          "vendedor@mail.com",
-          "123123",
-        ],
+      await http.put(Uri.parse(apiUri),
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+          },
+          body: json.encode(Vendedor(
+              nome: 'vendedor',
+              cpf: '516.433.090-30',
+              dataNascimento: '2000-05-11T00:00:00.000',
+              email: 'vendedor@mail.com',
+              senha: '123123').toMap()
+          )
       );
 
       print("vendedor seeded");
@@ -78,21 +85,13 @@ class VendedorRepository with ChangeNotifier {
   }
 
   void insertVendedor(Vendedor vendedor) async {
-    final db = await database;
-    final nextId = Sqflite.firstIntValue(
-        await db.rawQuery('SELECT MAX($columnIdVendedor) + 1 FROM $table'));
-    await db.rawInsert(
-      'INSERT INTO $table($columnIdVendedor, $columnNome, $columnDataNascimento, $columnCPF, $columnEmail, $columnSenha) VALUES (?, ?, ?, ?, ?, ?)',
-      [
-        nextId,
-        vendedor.nome,
-        vendedor.dataNascimento,
-        vendedor.cpf,
-        vendedor.email,
-        vendedor.senha,
-      ],
+    await http.put(Uri.parse(apiUri),
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        body: json.encode(vendedor.toMap())
     );
-
     notifyListeners();
     print(vendedor.toMap());
   }
@@ -106,96 +105,64 @@ class VendedorRepository with ChangeNotifier {
 
   Future<int> get count async {
     final db = await database;
-    final maps = await db!.query(table, columns: [columnIdVendedor, columnNome]);
+    final maps = await db.query(table, columns: [columnIdVendedor, columnNome]);
     return maps.length;
   }
 
   Future<Vendedor?> byIndex(int i) async {
-    final db = await database;
-    final maps = await db.query(table,
-        columns: [
-          columnIdVendedor,
-          columnNome,
-          columnCPF,
-          columnDataNascimento
-        ],
-        where: '$columnIdVendedor = ?',
-        whereArgs: [i]);
-    if (maps.isEmpty) {
+    final List parsed = json.decode(
+        await http.read(Uri.parse("$apiUri?id=$i"))
+    );
+    if (parsed.isEmpty) {
       return null;
     } else {
-      return Vendedor.fromMap(maps.first);
+      return Vendedor.fromMap(parsed.first);
     }
   }
 
   Future<List<Vendedor>> getVendedors() async {
-    final db = await database;
-    final maps = await db.query(table, columns: [
-      columnIdVendedor,
-      columnNome,
-      columnCPF,
-      columnDataNascimento,
-      columnEmail,
-      columnSenha
-    ]);
-    notifyListeners();
-    print(maps.length);
-    return maps.map((map) => Vendedor.fromMap(map)).toList();
+    final List parsed = json.decode(await http.read(Uri.parse(apiUri)));
+    return parsed.map((map) => Vendedor.fromMap(map)).toList();
   }
 
   Future<void> removerVendedor(int idVendedor) async {
-    final db = await database;
-    final rowsDeleted = await db.rawDelete(
-      'DELETE FROM $table WHERE $columnIdVendedor = ?',
-      [idVendedor],
-    );
-
+    await http.delete(Uri.parse("$apiUri?id=$idVendedor"));
     notifyListeners();
   }
 
   Future<Vendedor?> obterVendedorPorId(int? idVendedor) async {
-    final db = await database;
-    final maps = await db.query(table,
-        columns: [
-          columnIdVendedor,
-          columnNome,
-          columnCPF,
-          columnDataNascimento,
-          columnEmail,
-          columnSenha
-        ],
-        where: '$columnIdVendedor = ?',
-        whereArgs: [idVendedor]);
-    notifyListeners();
-    if (maps.isEmpty) {
+    final List parsed = json.decode(
+        await http.read(Uri.parse("$apiUri?id=$idVendedor"))
+    );
+    if (parsed.isEmpty) {
       return null;
     } else {
-      return Vendedor.fromMap(maps.first);
+      return Vendedor.fromMap(parsed.first);
     }
   }
 
-  Future<void> editarVendedor(int id, String nome, String dataNascimento, String CPF, String email, String senha) async {
-    final db = await database;
-    print('$id vai ser editado');
-
-    final rowsAffected = await db.rawUpdate(
-        'UPDATE $table SET $columnNome = ?, $columnDataNascimento = ?, $columnCPF = ?, $columnEmail = ?, $columnSenha = ? WHERE idVendedor = ?',
-        [nome, dataNascimento, CPF, email, senha, id]);
-
-    print('Rows affected: $rowsAffected');
+  Future<void> editarVendedor(int id, String nome, String dataNascimento, String cpf, String email, String senha) async {
+    await http.put(Uri.parse(apiUri),
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        body: json.encode(Vendedor(
+            idVendedor: id,
+            nome: nome,
+            cpf: cpf,
+            dataNascimento: dataNascimento,
+            email: email,
+            senha: senha
+        ).toMap())
+    );
     notifyListeners();
   }
 
   Future<int> getLogin(String? email, String? senha) async {
-    final db = await database;
-
-    final List<Map<String, dynamic>> maps =
-    await db.rawQuery(''
-        'SELECT $columnNome, $columnIdVendedor '
-        'FROM vendedor v '
-        'WHERE v.email = ? '
-        'AND v.senha = ?;',
-        [email, senha]);
+    final List<dynamic> maps = await json.decode(
+        await http.read(Uri.parse("$apiUri?email=$email&senha=$senha"))
+    );
 
     if(maps.isEmpty) {
       return -1;

@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:vendas_veiculos/repository/promocao_repository.dart';
+import 'package:http/http.dart' as http;
 
 import '../data/database_helper.dart';
 import '../model/veiculo.dart';
@@ -9,14 +12,15 @@ import '../utils/RealCurrencyInputFormatter.dart';
 
 class VeiculoRepository with ChangeNotifier {
   static Database? db;
-  static final table = 'veiculo';
-  static final columnId = 'idVeiculo';
-  static final columnIdModelo = 'idModelo';
-  static final columnIdFornecedor = 'idFornecedor';
-  static final columnValor = 'valor';
-  static final columnTipo = 'tipo';
-  static final columnCor = 'cor';
-  static final columnPlaca = 'placa';
+  static const table = 'veiculo';
+  static const columnId = 'idVeiculo';
+  static const columnIdModelo = 'idModelo';
+  static const columnIdFornecedor = 'idFornecedor';
+  static const columnValor = 'valor';
+  static const columnTipo = 'tipo';
+  static const columnCor = 'cor';
+  static const columnPlaca = 'placa';
+  static const apiUri = 'http://10.0.2.2:8080/api/veiculo';
   late String descricao = '';
 
   Future<Database> get database async {
@@ -47,22 +51,13 @@ class VeiculoRepository with ChangeNotifier {
   }
 
   void insertVeiculo(Veiculo veiculo) async {
-    final db = await database;
-    final nextId = Sqflite.firstIntValue(
-        await db.rawQuery('SELECT MAX($columnId) + 1 as last_id FROM $table'));
-    await db.rawInsert(
-      'INSERT INTO $table(${columnId}, ${columnIdModelo}, ${columnIdFornecedor}, ${columnValor}, ${columnTipo}, ${columnCor}, ${columnPlaca}) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [
-        nextId,
-        veiculo.idModelo,
-        veiculo.idFornecedor,
-        veiculo.valor,
-        veiculo.tipo,
-        veiculo.cor,
-        veiculo.placa
-      ],
+    await http.put(Uri.parse(apiUri),
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        body: json.encode(veiculo.toMap())
     );
-
     notifyListeners();
     print(veiculo.toMap());
   }
@@ -82,44 +77,29 @@ class VeiculoRepository with ChangeNotifier {
   }
 
   Future<Veiculo?> byIndex(int i) async {
-    final db = await database;
-    final maps = await db.query(table,
-        columns: [
-          columnId,
-          columnIdModelo,
-          columnIdFornecedor,
-          columnValor,
-          columnTipo,
-          columnCor,
-          columnPlaca
-        ], //rever as necessárias
-        where: '$columnId = ?',
-        whereArgs: [i]);
-    if (maps.isEmpty) {
+    final List parsed = json.decode(
+        await http.read(Uri.parse("$apiUri?id=$i"))
+    );
+    if (parsed.isEmpty) {
       return null;
     } else {
-      return Veiculo.fromMap(maps.first);
+      return Veiculo.fromMap(parsed.first);
     }
   }
 
   Future<String?> obterDescricaoVeiculo(Veiculo veiculo) async {
-    final db = await database;
     String? dadosString;
     int idModelo = veiculo.idModelo!;
 
-    final List<Map<String, dynamic>> resultado = await db.rawQuery('''
-    SELECT marca.nome AS nome_marca, modelo.nome AS nome_modelo, modelo.ano
-    FROM modelo
-    INNER JOIN marca ON modelo.idMarca = marca.idMarca
-    WHERE modelo.idModelo = '$idModelo'
-  ''');
+    final List resultado = json.decode(
+        await http.read(Uri.parse("$apiUri/descricao?id=$idModelo"))
+    );
 
     final promocao = await PromocaoRepository().byVeiculo(veiculo.idVeiculo!);
     final valorVeiculo =
         RealCurrencyInputFormatter().formatCurrency(veiculo.valor);
     String valor = promocao != null
-        ? 'Valor Promocional de: $valorVeiculo por: ' +
-            RealCurrencyInputFormatter().formatCurrency(promocao.valor!)
+        ? 'Valor Promocional de: $valorVeiculo por: ${RealCurrencyInputFormatter().formatCurrency(promocao.valor)}'
         : valorVeiculo;
 
     for (var row in resultado) {
@@ -130,41 +110,33 @@ class VeiculoRepository with ChangeNotifier {
   }
 
   Future<List<Veiculo>> getVeiculos() async {
-    final db = await database;
-    final maps = await db.query(table, columns: [
-      columnId,
-      columnIdModelo,
-      columnIdFornecedor,
-      columnValor,
-      columnTipo,
-      columnCor,
-      columnPlaca
-    ]);
-    notifyListeners();
-    print(maps.length);
-    return maps.map((map) => Veiculo.fromMap(map)).toList();
+    final List parsed = json.decode(await http.read(Uri.parse(apiUri)));
+    print(parsed.toString());
+    return parsed.map((map) => Veiculo.fromMap(map)).toList();
   }
 
   Future<void> removerVeiculo(int idVeiculo) async {
-    final db = await database;
-    final rowsDeleted = await db.rawDelete(
-      'DELETE FROM $table WHERE $columnId = ?',
-      [idVeiculo],
-    );
-
+    await http.delete(Uri.parse("$apiUri?id=$idVeiculo"));
     notifyListeners();
   }
 
   Future<void> editarVeiculo(
       idVeiculo, idModelo, idFornecedor, valor, tipo, cor, placa) async {
-    final db = await database;
-
-    final rowsAffected = await db.rawUpdate(
-      'UPDATE $table SET idModelo = ?, idFornecedor = ?, valor = ?, tipo = ?, cor = ?, placa = ? WHERE idVeiculo = ?',
-      [idModelo, idFornecedor, valor, tipo, cor, placa, idVeiculo],
+    await http.put(Uri.parse(apiUri),
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        body: json.encode(Veiculo(
+            idVeiculo: idVeiculo,
+            idModelo: idModelo,
+            idFornecedor: idFornecedor,
+            valor: valor,
+            tipo: tipo,
+            cor: cor,
+            placa: placa
+        ).toMap())
     );
-
-    print('Rows affected: $rowsAffected');
     notifyListeners();
   }
 

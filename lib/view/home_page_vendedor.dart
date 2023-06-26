@@ -117,6 +117,13 @@ class _HomePageVendedorState extends State<HomePageVendedor> {
             shrinkWrap: true,
             children: <Widget>[
               CardItem(
+                title: "Marcas",
+                icon: Icons.branding_watermark,
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.marcaList);
+                },
+              ),
+              CardItem(
                 title: "Modelos",
                 icon: Icons.merge_type,
                 onTap: () {
@@ -124,17 +131,24 @@ class _HomePageVendedorState extends State<HomePageVendedor> {
                 },
               ),
               CardItem(
-                title: "Relatórios",
-                icon: Icons.text_snippet_outlined,
+                title: "Veículos",
+                icon: Icons.car_crash,
                 onTap: () {
-                  Navigator.pushNamed(context, AppRoutes.clienteList);//??
+                  Navigator.pushNamed(context, AppRoutes.veiculoList);
                 },
               ),
               CardItem(
-                title: "Finanças",
+                title: "Promoções",
+                icon: Icons.local_offer,
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.promocaoList);
+                },
+              ),
+              CardItem(
+                title: "Vendas",
                 icon: Icons.branding_watermark,
                 onTap: () {
-                  Navigator.pushNamed(context, AppRoutes.marcaList); //??
+                  Navigator.pushNamed(context, AppRoutes.vendaList); //??
                 },
               ),
               CardItem(
@@ -148,22 +162,22 @@ class _HomePageVendedorState extends State<HomePageVendedor> {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Página Inicial',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.monetization_on),
-            label: 'Minhas vendas',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.app_registration),
-            label: 'Vender',
-          ),
-        ],
-      ),
+      // bottomNavigationBar: BottomNavigationBar(
+      //   items: const <BottomNavigationBarItem>[
+      //     BottomNavigationBarItem(
+      //       icon: Icon(Icons.home),
+      //       label: 'Página Inicial',
+      //     ),
+      //     BottomNavigationBarItem(
+      //       icon: Icon(Icons.monetization_on),
+      //       label: 'Minhas vendas',
+      //     ),
+      //     BottomNavigationBarItem(
+      //       icon: Icon(Icons.app_registration),
+      //       label: 'Vender',
+      //     ),
+      //   ],
+      // ),
     );
   }
 }

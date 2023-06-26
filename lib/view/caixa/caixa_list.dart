@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:vendas_veiculos/model/caixa.dart';
 import 'package:vendas_veiculos/repository/caixa_repository.dart';
 
 import '../../../components/caixa_tile.dart';
-import '../../../routes/app_routes.dart';
 import '../../model/venda.dart';
 
 class CaixaList extends StatelessWidget {

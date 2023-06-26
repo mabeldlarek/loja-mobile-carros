@@ -7,7 +7,7 @@ import '../../model/veiculo.dart';
 import '../../repository/promocao_repository.dart';
 import '../../repository/veiculo_repository.dart';
 import '../../utils/RealCurrencyInputFormatter.dart';
-import '../veiculo/veiculo_lista.dart';
+import '../veiculo/veiculo_list.dart';
 
 class PromocaoForm extends StatefulWidget {
   @override

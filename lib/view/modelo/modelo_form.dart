@@ -29,8 +29,8 @@ class _ModeloFormState extends State<ModeloForm> {
       _formData['nome'] = modelo.nome!;
       _formData['ano'] = modelo.ano!;
       _formData['codigoFipe'] = modelo.codigoFipe!;
-      _formData['numPortas'] = modelo.numPortas!.toString();
-      _formData['numAssentos'] = modelo.numAssentos!.toString();
+      _formData['numPortas'] = modelo.numeroPortas!.toString();
+      _formData['numAssentos'] = modelo.numeroAssentos!.toString();
       _formData['quilometragem'] = modelo.quilometragem.toString();
       _formData['possuiAr'] = modelo.possuiAr!;
       _selectedIdMarca = modelo.idMarca!;
@@ -276,8 +276,8 @@ class _ModeloFormState extends State<ModeloForm> {
         idMarca: _selectedIdMarca,
         ano: _formData['ano'],
         codigoFipe: _formData['codigoFipe'],
-        numPortas: int.parse(_formData['numPortas']!),
-        numAssentos: int.parse(_formData['numAssentos']!),
+        numeroPortas: int.parse(_formData['numPortas']!),
+        numeroAssentos: int.parse(_formData['numAssentos']!),
         quilometragem: _converterQuilometragem(_formData['quilometragem']!),
         possuiAr: _formData['possuiAr']!));
   }

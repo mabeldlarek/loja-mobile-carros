@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:vendas_veiculos/data/database_helper.dart';
 import 'package:vendas_veiculos/model/agenda.dart';
 import '../data/session.dart';
+import 'package:http/http.dart' as http;
 
 class AgendaRepository with ChangeNotifier {
   static Database? db;
@@ -13,6 +16,7 @@ class AgendaRepository with ChangeNotifier {
   static const columnTitulo = 'titulo';
   static const columnDescricao = 'descricao';
   static const columnDataHora = 'dataHora';
+  static const apiUri = 'http://10.0.2.2:8080/api/agenda';
 
   Future<Database> get database async {
     if (db != null) return db!;
@@ -40,20 +44,13 @@ class AgendaRepository with ChangeNotifier {
   }
 
   void insertAgenda(Agenda agenda) async {
-    final db = await database;
-    final nextId = Sqflite.firstIntValue(
-        await db.rawQuery('SELECT MAX($columnIdAgenda) + 1 FROM $table'));
-    await db.rawInsert(
-      'INSERT INTO $table($columnIdAgenda, $columnIdVendedor, $columnTitulo, $columnDescricao, $columnDataHora) VALUES (?, ?, ?, ?, ?)',
-      [
-        nextId,
-        agenda.idVendedor,
-        agenda.titulo,
-        agenda.descricao,
-        agenda.dataHora,
-      ],
+    await http.put(Uri.parse(apiUri),
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        body: json.encode(agenda.toMap())
     );
-
     notifyListeners();
     print(agenda.toMap());
   }
@@ -73,42 +70,21 @@ class AgendaRepository with ChangeNotifier {
   }
 
   Future<Agenda?> byIndex(int i) async {
-    final db = await database;
-    final maps = await db.query(table,
-        columns: [
-          columnIdAgenda,
-          columnIdVendedor,
-          columnTitulo,
-          columnDescricao,
-          columnDataHora
-        ],
-        where: '$columnIdAgenda = ?',
-        whereArgs: [i]);
-    if (maps.isEmpty) {
+    final List parsed = json.decode(
+        await http.read(Uri.parse("$apiUri?id=$i"))
+    );
+    if (parsed.isEmpty) {
       return null;
     } else {
-      return Agenda.fromMap(maps.first);
+      return Agenda.fromMap(parsed.first);
     }
   }
 
   Future<List<Agenda>> getHomeEventos() async {
     try {
-      final db = await database;
-      final idVendedor = Session.id;
-      print('aaaaaaaaaaaaaaaaaaaqui');
-      print(idVendedor);
-      final maps = await db.query(table,
-          columns: [
-            columnIdAgenda,
-            columnIdVendedor,
-            columnTitulo,
-            columnDescricao,
-            columnDataHora
-          ],
-          where: '$columnIdVendedor = ?',
-          whereArgs: [idVendedor],
-          limit: 3,
-          orderBy: '$columnDataHora desc');
+      final List maps = json.decode(
+          await http.read(Uri.parse("$apiUri?idVendedor=${Session.id}&limit=true"))
+      );
 
       notifyListeners();
       return maps.map((map) => Agenda.fromMap(map)).toList();
@@ -120,20 +96,9 @@ class AgendaRepository with ChangeNotifier {
 
   Future<List<Agenda>> getEventos() async {
     try {
-      final db = await database;
-      final idVendedor = Session.id;
-
-      final maps = await db.query(table,
-          columns: [
-            columnIdAgenda,
-            columnIdVendedor,
-            columnTitulo,
-            columnDescricao,
-            columnDataHora
-          ],
-          where: '$columnIdVendedor = ?',
-          whereArgs: [idVendedor],
-          orderBy: '$columnDataHora desc');
+      final maps = json.decode(
+          await http.read(Uri.parse("$apiUri?idVendedor=${Session.id}&limit=false"))
+      );
       notifyListeners();
       return maps.map((map) => Agenda.fromMap(map)).toList();
     } catch (e) {
@@ -143,27 +108,25 @@ class AgendaRepository with ChangeNotifier {
   }
 
   Future<void> removerAgenda(int idAgenda) async {
-    final db = await database;
-    final rowsDeleted = await db.rawDelete(
-      'DELETE FROM $table WHERE $columnIdAgenda = ?',
-      [idAgenda],
-    );
-
+    await http.delete(Uri.parse("$apiUri?id=$idAgenda"));
     notifyListeners();
   }
 
   Future<void> editarAgenda(
       int id, String titulo, String descricao, String dataHora) async {
-    final db = await database;
-
-    final rowsAffected = await db.rawUpdate('''
-    UPDATE $table 
-    SET $columnTitulo = ?, 
-    $columnDescricao = ?,
-    $columnDataHora = ?
-    WHERE idAgenda = ?
-''', [titulo, descricao, dataHora, id]);
-
+    await http.put(Uri.parse(apiUri),
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        body: json.encode(Agenda(
+          idAgenda: id,
+          idVendedor: Session.id!,
+          titulo: titulo,
+          descricao: descricao,
+          dataHora: dataHora,
+        ).toMap())
+    );
     notifyListeners();
   }
 }

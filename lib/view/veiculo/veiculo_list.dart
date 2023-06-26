@@ -7,7 +7,7 @@ import '../../repository/veiculo_repository.dart';
 import '../../routes/app_routes.dart';
 
 class VeiculoList extends StatelessWidget {
-  var contextPrevious = null;
+  BuildContext? contextPrevious;
 
   VeiculoList({super.key, BuildContext? ctxPrev}) {
     this.contextPrevious = ctxPrev;
@@ -17,8 +17,7 @@ class VeiculoList extends StatelessWidget {
   Widget build(BuildContext context) {
     final VeiculoRepository veiculo = Provider.of(context);
     List<Veiculo> _veiculo = [];
-    Future<List<Veiculo>> _list;
-    _list = veiculo.getVeiculos();
+    Future<List<Veiculo>> _list = veiculo.getVeiculos();
     return Scaffold(
         appBar: AppBar(
           title: Text('Lista de Veiculos'),
@@ -31,8 +30,9 @@ class VeiculoList extends StatelessWidget {
           ],
         ),
         body: FutureBuilder<List<Veiculo>>(
-            future: _list,
+            future: veiculo.getVeiculos(),
             builder: (context, snapshot) {
+              print(snapshot.hasData);
               if (snapshot.hasData) {
                 return ListView.builder(
                   itemCount: snapshot.data?.length,
@@ -40,7 +40,7 @@ class VeiculoList extends StatelessWidget {
                   VeiculoTile(snapshot.data![i]) : VeiculoTileSelecao(snapshot.data![i])
                 );
               } else {
-                return CircularProgressIndicator();
+                return const CircularProgressIndicator();
               }
             }));
   }

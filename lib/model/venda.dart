@@ -20,9 +20,9 @@ class Venda {
   Map<String, dynamic> toMap() {
     return {
       'idVenda': idVenda,
-      'veiculo_id': idVeiculo,
-      'cliente_id': idCliente,
-      'vendedor_id': idVendedor,
+      'idVeiculo': idVeiculo,
+      'idCliente': idCliente,
+      'idVendedor': idVendedor,
       'entrada': entrada,
       'parcelas': parcelas,
       'data': data,

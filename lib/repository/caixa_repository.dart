@@ -8,7 +8,7 @@ import '../model/venda.dart';
 
 class CaixaRepository with ChangeNotifier {
   static Database? db;
-  static final table = 'venda';
+  static const table = 'venda';
 
   Future<Database> get database async {
     if (db != null) return db!;

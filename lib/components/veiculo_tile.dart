@@ -23,7 +23,7 @@ class VeiculoTile extends StatelessWidget {
                 String? resultado = snapshot.data;
                 bool veiculoVendido = vendaSnapshot.data ?? false;
                 return ListTile(
-                    enabled: veiculoVendido,
+                    enabled: !veiculoVendido,
                     title: Text(resultado ?? ''),
                     trailing: Container(
                       width: 100,

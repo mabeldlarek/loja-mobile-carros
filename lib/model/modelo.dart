@@ -1,17 +1,11 @@
-
-import 'package:provider/provider.dart';
-import 'package:vendas_veiculos/model/marca.dart';
-
-import '../repository/marca_repository.dart';
-
 class Modelo {
   final int? idModelo;
   final String? nome;
   final int? idMarca;
   final String? ano;
   final String? codigoFipe;
-  final int? numPortas;
-  final int? numAssentos;
+  final int? numeroPortas;
+  final int? numeroAssentos;
   final double quilometragem;
   final String possuiAr;
 
@@ -21,8 +15,8 @@ class Modelo {
     required this.idMarca,
     required this.ano,
     required this.codigoFipe,
-    required this.numPortas,
-    required this.numAssentos,
+    required this.numeroPortas,
+    required this.numeroAssentos,
     required this.quilometragem,
     required this.possuiAr,
   });
@@ -34,8 +28,8 @@ class Modelo {
       'idMarca': idMarca,
       'ano': ano,
       'codigoFipe': codigoFipe,
-      'numPortas': numPortas,
-      'numAssentos': numAssentos,
+      'numeroPortas': numeroPortas,
+      'numeroAssentos': numeroAssentos,
       'quilometragem': quilometragem,
       'possuiAr': possuiAr,
     };
@@ -48,8 +42,8 @@ class Modelo {
       idMarca: (map['idMarca']),
       ano: map['ano'],
       codigoFipe: map['codigoFipe'],
-      numPortas: map['numPortas'],
-      numAssentos: map['numAssentos'],
+      numeroPortas: map['numeroPortas'],
+      numeroAssentos: map['numeroAssentos'],
       quilometragem: map['quilometragem'],
       possuiAr: map['possuiAr'],
     );

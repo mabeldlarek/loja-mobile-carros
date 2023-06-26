@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../../model/cliente.dart';
-import '../../model/marca.dart';
-import '../../model/modelo.dart';
 import '../../model/veiculo.dart';
 import '../../repository/cliente_repository.dart';
 import '../../repository/marca_repository.dart';
@@ -44,9 +41,9 @@ class _VeiculoFormState extends State<VeiculoForm> {
       final promocao = await PromocaoRepository().byVeiculo(veiculo.idVeiculo!);
 
       _controllerModelo.text =
-          marca!.nome! + '/' + modelo!.nome! + ' - ' + modelo.ano!;
-      _controllerFornecedor.text = cliente!.nome!;
-      _controller.text = promocao==null? _formatCurrency(veiculo.valor): _formatCurrency(promocao!.valor);
+          '${marca!.nome!}/${modelo.nome!} - ${modelo.ano!}';
+      _controllerFornecedor.text = cliente!.nome;
+      _controller.text = promocao==null? _formatCurrency(veiculo.valor): _formatCurrency(promocao.valor);
     }
   }
 
@@ -84,17 +81,18 @@ class _VeiculoFormState extends State<VeiculoForm> {
 
                     if (_id != null) {
                       _editar();
-                    } else
+                    } else {
                       _inserir();
+                    }
 
                     Navigator.of(context).pop();
                   }
                 },
-                icon: Icon(Icons.save)),
+                icon: const Icon(Icons.save)),
           ],
         ),
         body: Padding(
-            padding: EdgeInsets.all(30),
+            padding: const EdgeInsets.all(30),
             child: Form(
               key: _form,
               child: SingleChildScrollView(
@@ -266,8 +264,8 @@ class _VeiculoFormState extends State<VeiculoForm> {
 
       final marca = await Provider.of<MarcaRepository>(context, listen: false)
           .byIndex(modelo!.idMarca!);
-      nomeModelo = modelo!.nome!;
-      ano = modelo!.ano!;
+      nomeModelo = modelo.nome!;
+      ano = modelo.ano!;
       nomeMarca = marca!.nome!;
     }
 
@@ -292,7 +290,7 @@ class _VeiculoFormState extends State<VeiculoForm> {
 
   void _inserir() async {
     Provider.of<VeiculoRepository>(context, listen: false).insertVeiculo(
-        Veiculo(
+       Veiculo(
             idModelo: _modeloSelecionadoId,
             idFornecedor: _fornecedorSelecionadoId,
             valor: _converterValorMonetario(_formData['valor']!),

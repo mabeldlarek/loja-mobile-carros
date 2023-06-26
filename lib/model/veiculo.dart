@@ -23,15 +23,20 @@ class Veiculo {
     return {
       'idVeiculo': idVeiculo,
       'idModelo': idModelo,
+      'idFornecedor': idFornecedor,
+      'valor': valor,
+      'tipo': tipo,
+      'cor': cor,
+      'placa': placa,
     };
   }
 
   static Veiculo fromMap(Map<String, dynamic> map) {
     return Veiculo(
         idVeiculo: map['idVeiculo'],
-        idModelo: map['idModelo'] ?? '',
-        idFornecedor: map['idFornecedor'] ?? '',
-        valor: map['valor'] ?? '',
+        idModelo: map['idModelo'],
+        idFornecedor: map['idFornecedor'],
+        valor: map['valor'] ?? 0,
         tipo: map['tipo'] ?? '',
         cor: map['cor'] ?? '',
         placa: map['placa'] ?? '');
